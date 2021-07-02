@@ -7,7 +7,7 @@
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
-DFRobot_Fermion mainMotor(16, 17);
+DFRobot_Fermion mainMotor(13, 14);
 DFRobot_Fermion steeringMotor(32, 33);
 int mainMotorSpeed = 25;
 const int MAX_DUTY_CYCLE = 255;

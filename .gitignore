@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+esp32-bluetooth-rc-car/lib/README
+esp32-bluetooth-rc-car/test/README
+esp32-bluetooth-rc-car/include/README
+esp32-bluetooth-rc-car/.vscode/extensions.json
