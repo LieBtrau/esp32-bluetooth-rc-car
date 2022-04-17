@@ -11,10 +11,11 @@ DFRobot_Fermion mainMotor(13, 14);
 DFRobot_Fermion steeringMotor(32, 33);
 int mainMotorSpeed = 25;
 const int MAX_DUTY_CYCLE = 255;
-const int FLASH_BT_NOT_CONNECTED=1000;
-const int FLASH_BT_CONNECTED=250;
+const int FLASH_BT_NOT_CONNECTED = 1000;
+const int FLASH_BT_CONNECTED = 250;
 AsyncDelay delay_status;
 AsyncDelay delay_10ms;
+AsyncDelay dead_mans_switch;
 
 typedef enum
 {
@@ -44,12 +45,12 @@ BluetoothSerial SerialBT;
 void setup()
 {
 	Serial.begin(115200);
-	SerialBT.begin("RC Car"); //Bluetooth device name
+	SerialBT.begin("RC Car"); // Bluetooth device name
 	Serial.println("The device started, now you can pair it with bluetooth!");
 	mainMotor.init(0, 20000, 8);
 	steeringMotor.init(1, 20000, 8);
 	delay_status.start(FLASH_BT_NOT_CONNECTED, AsyncDelay::MILLIS);
-	delay_10ms.start(10, AsyncDelay::MILLIS);
+	dead_mans_switch.start(1000, AsyncDelay::MILLIS);
 	pinMode(LED_BUILTIN, OUTPUT);
 }
 
@@ -132,15 +133,20 @@ void takeAction(int c)
 void loop()
 {
 	static int lastC = 0;
-	if (delay_10ms.isExpired() && SerialBT.available())
+	if (SerialBT.available())
 	{
-		delay_10ms.repeat();
+		dead_mans_switch.restart();
 		int c = SerialBT.read();
 		if (c != lastC)
 		{
 			lastC = c;
 			takeAction(c);
 		}
+	}
+	if(dead_mans_switch.isExpired())
+	{
+		dead_mans_switch.repeat();
+		takeAction(STOP);
 	}
 	if (delay_status.isExpired())
 	{
