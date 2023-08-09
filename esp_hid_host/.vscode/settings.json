@@ -1,0 +1,8 @@
+{
+    "idf.adapterTargetName": "esp32",
+    "idf.flashType": "UART",
+    "idf.port": "/dev/ttyUSB0",
+    "idf.openOcdConfigs": [
+        "board/esp32-bridge.cfg"
+    ]
+}
