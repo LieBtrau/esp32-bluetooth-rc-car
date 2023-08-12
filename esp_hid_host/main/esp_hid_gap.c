@@ -18,7 +18,7 @@
 static const char *TAG = "ESP_HID_GAP";
 
 // uncomment to print all devices that were seen during a scan
-#define GAP_DBG_PRINTF(...) printf(__VA_ARGS__)
+#define GAP_DBG_PRINTF(...) /*printf(__VA_ARGS__)*/
 
 #if CONFIG_BT_HID_HOST_ENABLED
 static const char * gap_bt_prop_type_names[5] = {"","BDNAME","COD","RSSI","EIR"};
@@ -231,7 +231,7 @@ void print_uuid(esp_bt_uuid_t *uuid)
     if (uuid->len == ESP_UUID_LEN_16) {
         GAP_DBG_PRINTF("UUID16: 0x%04x", uuid->uuid.uuid16);
     } else if (uuid->len == ESP_UUID_LEN_32) {
-        GAP_DBG_PRINTF("UUID32: 0x%08"PRIx32, uuid->uuid.uuid32);
+        GAP_DBG_PRINTF( "UUID32: 0x%08" PRIx32, uuid->uuid.uuid32);
     } else if (uuid->len == ESP_UUID_LEN_128) {
         GAP_DBG_PRINTF("UUID128: %02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x", uuid->uuid.uuid128[0],
                        uuid->uuid.uuid128[1], uuid->uuid.uuid128[2], uuid->uuid.uuid128[3],
@@ -402,10 +402,10 @@ static void bt_gap_event_handler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_para
     }
 #if (CONFIG_BT_SSP_ENABLED)
     case ESP_BT_GAP_KEY_NOTIF_EVT:
-        ESP_LOGI(TAG, "BT GAP KEY_NOTIF passkey:%"PRIu32, param->key_notif.passkey);
+        ESP_LOGI(TAG, "BT GAP KEY_NOTIF passkey:%" PRIu32, param->key_notif.passkey);
         break;
     case ESP_BT_GAP_CFM_REQ_EVT: {
-        ESP_LOGI(TAG, "ESP_BT_GAP_CFM_REQ_EVT Please compare the numeric value: %"PRIu32, param->cfm_req.num_val);
+        ESP_LOGI(TAG, "ESP_BT_GAP_CFM_REQ_EVT Please compare the numeric value: %" PRIu32, param->cfm_req.num_val);
         esp_bt_gap_ssp_confirm_reply(param->cfm_req.bda, true);
         break;
     }
