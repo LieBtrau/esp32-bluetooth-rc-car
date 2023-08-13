@@ -31,6 +31,7 @@
 #include "esp_hidh_bluedroid.h"
 
 static const char *TAG = "ESP_HIDH_DEMO";
+static TaskHandle_t xTask1;
 
 void hidh_callback(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
 {
@@ -79,6 +80,7 @@ void hidh_callback(void *handler_args, esp_event_base_t base, int32_t id, void *
     {
         const uint8_t *bda = esp_hidh_dev_bda_get(param->close.dev);
         ESP_LOGI(TAG, ESP_BD_ADDR_STR " CLOSE: %s", ESP_BD_ADDR_HEX(bda), esp_hidh_dev_name_get(param->close.dev));
+        xTaskNotifyGive( xTask1 );
         break;
     }
     default:
@@ -191,5 +193,5 @@ void app_main(void)
     };
     ESP_ERROR_CHECK(esp_hidh_init(&config));
     int scan = 10;
-    xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, &scan, 2, NULL);
+    xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, &scan, 2, &xTask1);
 }
