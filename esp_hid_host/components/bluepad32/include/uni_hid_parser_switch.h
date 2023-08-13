@@ -22,6 +22,7 @@ limitations under the License.
 #include <stdint.h>
 #include <esp_bt_defs.h>
 #include <esp_hid_common.h>
+#include "esp_hidh.h"
 
 typedef struct
 {
@@ -30,3 +31,5 @@ typedef struct
 }nintendo_switch_controller_t;
 
 void nintendo_switch_controller_init(nintendo_switch_controller_t* controller, esp_bd_addr_t address);
+void nintendo_switch_controller_callback(esp_hidh_event_t event, esp_hidh_event_data_t *param);
+void nintendo_switch_controller_connect(nintendo_switch_controller_t* controller);
