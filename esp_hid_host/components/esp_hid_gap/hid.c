@@ -6,7 +6,6 @@
 #include "hid.h"
 
 static const char *TAG = "HID";
-static TaskHandle_t* xTask1;
 
 static callback_entry_t *callback_table = NULL;
 static int callback_table_size = 0;
@@ -39,13 +38,12 @@ void hidh_callback(void *handler_args, esp_event_base_t base, int32_t id, void *
  * @todo check to replace with new API as shown in the [hid device example](https://github.com/espressif/esp-idf/blob/db4308888d30ccaa93d5492a323cd85665f24831/examples/bluetooth/bluedroid/classic_bt/bt_hid_mouse_device/main/main.c)
  * @param taskHandle 
  */
-void hid_init(TaskHandle_t* taskHandle)
+void hid_init()
 {
 #if HID_HOST_MODE == HIDH_IDLE_MODE
     ESP_LOGE(TAG, "Please turn on BT HID host or BLE!");
     return;
 #endif
-    xTask1 = taskHandle;
     ESP_LOGI(TAG, "setting hid gap, mode:%d", HID_HOST_MODE);
     ESP_ERROR_CHECK(esp_hid_gap_init(HID_HOST_MODE));
 #if CONFIG_BT_BLE_ENABLED
