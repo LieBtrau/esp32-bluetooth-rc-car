@@ -3,63 +3,33 @@
 #include "esp_hidh.h"
 #include "esp_hid_gap.h"
 #include "esp_hidh_bluedroid.h"
+#include "hid.h"
 
 static const char *TAG = "HID";
 static TaskHandle_t* xTask1;
+
+static callback_entry_t *callback_table = NULL;
+static int callback_table_size = 0;
+
+void add_callback(esp_bd_addr_t address, void (*callback)(esp_hidh_event_t event, esp_hidh_event_data_t *param))
+{
+    callback_table_size++;
+    callback_table = realloc(callback_table, callback_table_size * sizeof(callback_entry_t));
+    callback_table[callback_table_size - 1].callback = callback;
+    memcpy(callback_table[callback_table_size - 1].bda, address, sizeof(esp_bd_addr_t));
+}
 
 void hidh_callback(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
 {
     esp_hidh_event_t event = (esp_hidh_event_t)id;
     esp_hidh_event_data_t *param = (esp_hidh_event_data_t *)event_data;
 
-    switch (event)
+    for (int i = 0; i < callback_table_size; i++)
     {
-    case ESP_HIDH_OPEN_EVENT:
-    {
-        if (param->open.status == ESP_OK)
+        if (memcmp(callback_table[i].bda, esp_hidh_dev_bda_get(param->open.dev), sizeof(esp_bd_addr_t)) == 0)
         {
-            const uint8_t *bda = esp_hidh_dev_bda_get(param->open.dev);
-            ESP_LOGI(TAG, ESP_BD_ADDR_STR " OPEN: %s", ESP_BD_ADDR_HEX(bda), esp_hidh_dev_name_get(param->open.dev));
-            esp_hidh_dev_dump(param->open.dev, stdout);
+            callback_table[i].callback(event, param);
         }
-        else
-        {
-            ESP_LOGE(TAG, " OPEN failed!");
-        }
-        break;
-    }
-    case ESP_HIDH_BATTERY_EVENT:
-    {
-        const uint8_t *bda = esp_hidh_dev_bda_get(param->battery.dev);
-        ESP_LOGI(TAG, ESP_BD_ADDR_STR " BATTERY: %d%%", ESP_BD_ADDR_HEX(bda), param->battery.level);
-        break;
-    }
-    case ESP_HIDH_INPUT_EVENT:
-    {
-        const uint8_t *bda = esp_hidh_dev_bda_get(param->input.dev);
-        ESP_LOGI(TAG, ESP_BD_ADDR_STR " INPUT: %8s, MAP: %2u, ID: %3u, Len: %d, Data:", ESP_BD_ADDR_HEX(bda), esp_hid_usage_str(param->input.usage), param->input.map_index, param->input.report_id, param->input.length);
-        ESP_LOG_BUFFER_HEX(TAG, param->input.data, param->input.length);
-        break;
-    }
-    case ESP_HIDH_FEATURE_EVENT:
-    {
-        const uint8_t *bda = esp_hidh_dev_bda_get(param->feature.dev);
-        ESP_LOGI(TAG, ESP_BD_ADDR_STR " FEATURE: %8s, MAP: %2u, ID: %3u, Len: %d", ESP_BD_ADDR_HEX(bda),
-                 esp_hid_usage_str(param->feature.usage), param->feature.map_index, param->feature.report_id,
-                 param->feature.length);
-        ESP_LOG_BUFFER_HEX(TAG, param->feature.data, param->feature.length);
-        break;
-    }
-    case ESP_HIDH_CLOSE_EVENT:
-    {
-        const uint8_t *bda = esp_hidh_dev_bda_get(param->close.dev);
-        ESP_LOGI(TAG, ESP_BD_ADDR_STR " CLOSE: %s", ESP_BD_ADDR_HEX(bda), esp_hidh_dev_name_get(param->close.dev));
-        xTaskNotifyGive( *xTask1 );
-        break;
-    }
-    default:
-        ESP_LOGI(TAG, "EVENT: %d", event);
-        break;
     }
 }
 
