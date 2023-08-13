@@ -22,4 +22,5 @@ void nintendo_switch_controller_init(nintendo_switch_controller_t* controller, e
 {
     memcpy(controller->bda, address, sizeof(esp_bd_addr_t));
     ESP_LOG_BUFFER_HEX(TAG, controller->bda, sizeof(esp_bd_addr_t));
+    controller->transport = ESP_HID_TRANSPORT_BT;
 }
