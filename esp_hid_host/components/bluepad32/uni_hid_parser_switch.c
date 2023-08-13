@@ -19,12 +19,20 @@ struct switch_report_3f_s {
     uint8_t ry_msb;
 } __attribute__((packed));
 
+static nintendo_switch_controller_t** controllerTable;
+static uint8_t controllerTableSize = 0;
+
 void nintendo_switch_controller_init(nintendo_switch_controller_t* controller, esp_bd_addr_t address)
 {
     memcpy(controller->bda, address, sizeof(esp_bd_addr_t));
     ESP_LOG_BUFFER_HEX(TAG, controller->bda, sizeof(esp_bd_addr_t));
     controller->transport = ESP_HID_TRANSPORT_BT;
     add_callback(controller->bda, nintendo_switch_controller_callback);
+
+    // Add the controller to the table
+    controllerTableSize++;
+    controllerTable = realloc(controllerTable, controllerTableSize * sizeof(nintendo_switch_controller_t*));
+    memcpy(&controllerTable[controllerTableSize - 1], &controller, sizeof(nintendo_switch_controller_t*));
 }
 
 void nintendo_switch_controller_connect(nintendo_switch_controller_t* controller)
@@ -36,6 +44,23 @@ void nintendo_switch_controller_connect(nintendo_switch_controller_t* controller
 void nintendo_switch_controller_callback(esp_hidh_event_t event, esp_hidh_event_data_t *param)
 {
     const uint8_t *bda = esp_hidh_dev_bda_get(param->open.dev);
+    nintendo_switch_controller_t* controller = NULL;
+
+    // Find the controller in the table
+    for (int i = 0; i < controllerTableSize; i++)
+    {
+        if (memcmp(controllerTable[i]->bda, bda, sizeof(esp_bd_addr_t)) == 0)
+        {
+            controller = controllerTable[i];
+            break;
+        }
+    }
+    if(controller == NULL)
+    {
+        ESP_LOGE(TAG, "Controller not found in table");
+        return;
+    }
+
     switch (event)
     {
     case ESP_HIDH_OPEN_EVENT:
