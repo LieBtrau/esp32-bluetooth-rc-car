@@ -1,9 +1,9 @@
-#include "uni_hid_parser_switch.h"
+#include "nintendo_switch_controller.h"
 #include "string.h"
 #include "esp_log.h"
 #include "hid.h"
 
-const char* TAG="uni_hid_parser_switch";
+const char* TAG="nintendo_switch_controller";
 
 struct switch_report_3f_s {
     uint8_t buttons_main;

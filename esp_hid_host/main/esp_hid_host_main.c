@@ -24,7 +24,7 @@
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
 
-#include "uni_hid_parser_switch.h"
+#include "nintendo_switch_controller.h"
 #include "hid.h"
 #include "esp_hidh.h"
 
