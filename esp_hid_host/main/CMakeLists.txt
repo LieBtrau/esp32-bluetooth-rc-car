@@ -1,10 +1,10 @@
 set(srcs "esp_hid_host_main.c"
-         "esp_hid_gap.c")
+        )
 set(include_dirs ".")
 
 idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "${include_dirs}"
-                       REQUIRES esp_hid bluepad32
+                       REQUIRES esp_hid bluepad32 esp_hid_gap
                        PRIV_REQUIRES nvs_flash)
 
 # https://github.com/TobleMiner/oled-nametag-firmware/blob/main/main/CMakeLists.txt

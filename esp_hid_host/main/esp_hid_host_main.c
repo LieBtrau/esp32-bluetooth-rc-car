@@ -144,8 +144,6 @@ bool scan_hid_device(esp_bd_addr_t address_to_find, uint32_t scan_duration_secon
 
 void hid_demo_task(void *pvParameters)
 {
-    int *pscan = (int *)pvParameters;
-
     nintendo_switch_controller_t controller;
     esp_bd_addr_t bluetooth_address = {0x98, 0xb6, 0xe9, 0x54, 0x85, 0x38};
     nintendo_switch_controller_init(&controller, bluetooth_address);
@@ -155,7 +153,7 @@ void hid_demo_task(void *pvParameters)
         // Keep trying to find the controller until it is found
         // If not yet paired, press home button on controller 10+ seconds so it can be found.
         esp_ble_addr_type_t addr_type;
-        while (!scan_hid_device(bluetooth_address, 5, &addr_type))
+        while (!scan_hid_device(bluetooth_address, 2, &addr_type))
             ;
         esp_hidh_dev_open(bluetooth_address, ESP_HID_TRANSPORT_BT, addr_type);
         
@@ -192,6 +190,6 @@ void app_main(void)
         .callback_arg = NULL,
     };
     ESP_ERROR_CHECK(esp_hidh_init(&config));
-    int scan = 10;
-    xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, &scan, 2, &xTask1);
+
+    xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, &xTask1);
 }
