@@ -101,7 +101,92 @@ GenerateClassCluster=0
 DocumentUniqueId=QAOSDMFK
 
 [Document4]
-DocumentPath=..\..\..\electronics-design-data\ECAD\Altium\Project Outputs for Integrated_Library_LieBtrau\Integrated_Library_LieBtrau.IntLib
+DocumentPath=Assembly.OutJob
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=
+
+[Document5]
+DocumentPath=Documentation.OutJob
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=
+
+[Document6]
+DocumentPath=Fabrication_ODB.OutJob
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=
+
+[Document7]
+DocumentPath=NewBrightCo_2015_Corvette.BomDoc
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=
+
+[Document8]
+DocumentPath=NBRCOR.PCBDwf
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=AQWKIAJL
+
+[Document9]
+DocumentPath=Fabrication_GBR.OutJob
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -129,6 +214,58 @@ ParamVariationCount=0
 
 [GeneratedDocument1]
 DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Design Rule Check - NBRCOR.html
+DItemRevisionGUID=
+
+[GeneratedDocument2]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.DRR
+DItemRevisionGUID=
+
+[GeneratedDocument3]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.EXTREP
+DItemRevisionGUID=
+
+[GeneratedDocument4]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.GBL
+DItemRevisionGUID=
+
+[GeneratedDocument5]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.GBO
+DItemRevisionGUID=
+
+[GeneratedDocument6]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.GBS
+DItemRevisionGUID=
+
+[GeneratedDocument7]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.GTL
+DItemRevisionGUID=
+
+[GeneratedDocument8]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.GTO
+DItemRevisionGUID=
+
+[GeneratedDocument9]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.GTS
+DItemRevisionGUID=
+
+[GeneratedDocument10]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.LDP
+DItemRevisionGUID=
+
+[GeneratedDocument11]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.REP
+DItemRevisionGUID=
+
+[GeneratedDocument12]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.RUL
+DItemRevisionGUID=
+
+[GeneratedDocument13]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.00\NBRCOR_E1.00.TXT
+DItemRevisionGUID=
+
+[GeneratedDocument14]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board assembly output\BOM\NBRCOR_E1.00A__BOM.xlsx
 DItemRevisionGUID=
 
 [Parameter1]
