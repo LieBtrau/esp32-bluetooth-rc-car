@@ -23,12 +23,16 @@ limitations under the License.
 #include <esp_bt_defs.h>
 #include <esp_hid_common.h>
 #include "esp_hidh.h"
+#include "uni_gamepad.h"
 
 typedef struct
 {
     esp_bd_addr_t bda;
     esp_hid_transport_t transport;
     bool is_connected;
+    uni_gamepad_t gamepad;
+    uni_gamepad_t last_gamepad;
+    QueueHandle_t buttonStateQueue;
 }nintendo_switch_controller_t;
 
 // Taken from Linux kernel: hid-nintendo.c

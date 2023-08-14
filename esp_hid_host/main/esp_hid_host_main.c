@@ -39,10 +39,14 @@ void hid_demo_task(void *pvParameters)
     nintendo_switch_controller_init(&controller, bluetooth_address);
     nintendo_switch_controller_connect(&controller);
 
+    uni_gamepad_t gamepad;
     for (;;)
     {
-        // Wait for the controller to be disconnected
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        if (xQueueReceive(controller.buttonStateQueue, &gamepad, (TickType_t)10) == pdPASS)
+        {
+            ESP_LOGI(TAG, "Button state: %d", gamepad.dpad);
+        }
+
     }
     vTaskDelete(NULL);
 }
