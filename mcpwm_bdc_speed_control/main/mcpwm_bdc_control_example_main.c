@@ -25,11 +25,11 @@ void app_main(void)
     const uint32_t BDC_MCPWM_FREQ_HZ = 25e3;                                                    // 25KHz PWM
     const uint32_t BDC_MCPWM_DUTY_TICK_MAX = BDC_MCPWM_TIMER_RESOLUTION_HZ / BDC_MCPWM_FREQ_HZ; // maximum value we can set for the duty cycle, in ticks
 
-    ESP_LOGI(TAG, "Create DC motor");
+    ESP_LOGI(TAG, "Create DC motors");
     bdc_motor_config_t motor1_config = {
         .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
-        .pwma_gpio_num = 18,//22,
-        .pwmb_gpio_num = 19,//23,
+        .pwma_gpio_num = 18,
+        .pwmb_gpio_num = 19,
     };
     bdc_motor_config_t motor2_config = {
         .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
@@ -50,17 +50,20 @@ void app_main(void)
      
     ESP_LOGI(TAG, "Set motor speed");
     bdc_motor_set_speed(motor1, BDC_MCPWM_DUTY_TICK_MAX / 2 /*50% duty cycle*/);
-    bdc_motor_set_speed(motor2, BDC_MCPWM_DUTY_TICK_MAX / 4 /*25% duty cycle*/);
+    bdc_motor_set_speed(motor2, 0 /*25% duty cycle*/);
 
     while (1)
     {
-        ESP_ERROR_CHECK(bdc_motor_forward(motor1));
-        vTaskDelay(pdMS_TO_TICKS(100));
-        ESP_ERROR_CHECK(bdc_motor_reverse(motor1));
-        vTaskDelay(pdMS_TO_TICKS(100));
+        // bdc_motor_brake() causes both outputs to be high.  Not allowed for our H-bridge configuration.
+        //  bdc_motor_coast() causes both outputs to be low.  This is what we want, equivalent to setting motor speed to 0.
         ESP_ERROR_CHECK(bdc_motor_forward(motor2));
-        vTaskDelay(pdMS_TO_TICKS(100));
-        ESP_ERROR_CHECK(bdc_motor_reverse(motor2));
+        // ESP_ERROR_CHECK(bdc_motor_forward(motor1));
+        // vTaskDelay(pdMS_TO_TICKS(100));
+        // ESP_ERROR_CHECK(bdc_motor_reverse(motor1));
+        // vTaskDelay(pdMS_TO_TICKS(100));
+        // ESP_ERROR_CHECK(bdc_motor_forward(motor2));
+        // vTaskDelay(pdMS_TO_TICKS(100));
+        // ESP_ERROR_CHECK(bdc_motor_reverse(motor2));
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
