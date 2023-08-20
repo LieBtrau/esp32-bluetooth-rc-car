@@ -26,7 +26,12 @@ void app_main(void)
     const uint32_t BDC_MCPWM_DUTY_TICK_MAX = BDC_MCPWM_TIMER_RESOLUTION_HZ / BDC_MCPWM_FREQ_HZ; // maximum value we can set for the duty cycle, in ticks
 
     ESP_LOGI(TAG, "Create DC motor");
-    bdc_motor_config_t motor_config = {
+    bdc_motor_config_t motor1_config = {
+        .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
+        .pwma_gpio_num = 18,//22,
+        .pwmb_gpio_num = 19,//23,
+    };
+    bdc_motor_config_t motor2_config = {
         .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
         .pwma_gpio_num = 22,
         .pwmb_gpio_num = 23,
@@ -35,20 +40,27 @@ void app_main(void)
         .group_id = 0,
         .resolution_hz = BDC_MCPWM_TIMER_RESOLUTION_HZ,
     };
-    bdc_motor_handle_t motor = NULL;
-    ESP_ERROR_CHECK(bdc_motor_new_mcpwm_device(&motor_config, &mcpwm_config, &motor));
-    ESP_LOGI(TAG, "Enable motor");
-    ESP_ERROR_CHECK(bdc_motor_enable(motor));
-    
+    bdc_motor_handle_t motor1 = NULL, motor2 = NULL;
+    ESP_ERROR_CHECK(bdc_motor_new_mcpwm_device(&motor1_config, &mcpwm_config, &motor1));
+    ESP_ERROR_CHECK(bdc_motor_new_mcpwm_device(&motor2_config, &mcpwm_config, &motor2));
+    ESP_LOGI(TAG, "Enable motor1");
+    ESP_ERROR_CHECK(bdc_motor_enable(motor1));
+    ESP_LOGI(TAG, "Enable motor2");
+    ESP_ERROR_CHECK(bdc_motor_enable(motor2));
+     
     ESP_LOGI(TAG, "Set motor speed");
-    uint32_t new_speed = BDC_MCPWM_DUTY_TICK_MAX / 2; // 50% duty cycle
-    bdc_motor_set_speed(motor, new_speed);
+    bdc_motor_set_speed(motor1, BDC_MCPWM_DUTY_TICK_MAX / 2 /*50% duty cycle*/);
+    bdc_motor_set_speed(motor2, BDC_MCPWM_DUTY_TICK_MAX / 4 /*25% duty cycle*/);
 
     while (1)
     {
-        ESP_ERROR_CHECK(bdc_motor_forward(motor));
+        ESP_ERROR_CHECK(bdc_motor_forward(motor1));
         vTaskDelay(pdMS_TO_TICKS(100));
-        ESP_ERROR_CHECK(bdc_motor_reverse(motor));
+        ESP_ERROR_CHECK(bdc_motor_reverse(motor1));
+        vTaskDelay(pdMS_TO_TICKS(100));
+        ESP_ERROR_CHECK(bdc_motor_forward(motor2));
+        vTaskDelay(pdMS_TO_TICKS(100));
+        ESP_ERROR_CHECK(bdc_motor_reverse(motor2));
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
