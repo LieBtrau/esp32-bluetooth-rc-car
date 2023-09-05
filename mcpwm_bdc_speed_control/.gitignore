@@ -1,0 +1,7 @@
+.devcontainer
+.vscode
+build
+*.lock
+*.old
+README.md
+.component_hash

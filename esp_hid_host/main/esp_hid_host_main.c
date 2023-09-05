@@ -1,7 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Unlicense OR CC0-1.0
+/**
+ * @file esp_hid_host_main.c
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-08-14
+ * 
+ * @copyright Copyright (c) 2023
+ * @details
+ *  * heavily based on [https://github.com/espressif/esp-idf/tree/3befd5fff7/examples/bluetooth/esp_hid_host]
+ *  * other bluetooth HID implementation, as described in the ESP bluetooth-hid API [https://github.com/nlemoing/bt_kb_receiver/tree/master]
  */
 
 #include <stdio.h>
@@ -39,10 +46,14 @@ void hid_demo_task(void *pvParameters)
     nintendo_switch_controller_init(&controller, bluetooth_address);
     nintendo_switch_controller_connect(&controller);
 
+    uni_gamepad_t gamepad;
     for (;;)
     {
-        // Wait for the controller to be disconnected
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        if (xQueueReceive(controller.buttonStateQueue, &gamepad, (TickType_t)10) == pdPASS)
+        {
+            ESP_LOGI(TAG, "Button state: %d", gamepad.dpad);
+        }
+
     }
     vTaskDelete(NULL);
 }
