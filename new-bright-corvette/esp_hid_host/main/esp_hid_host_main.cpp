@@ -60,7 +60,7 @@ void hid_demo_task(void *pvParameters)
     vTaskDelete(NULL);
 }
 
-void app_main(void)
+extern "C" void app_main(void)
 {
     esp_err_t ret;
 

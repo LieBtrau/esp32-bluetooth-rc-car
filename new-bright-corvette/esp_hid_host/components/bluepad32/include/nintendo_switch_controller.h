@@ -25,6 +25,10 @@ limitations under the License.
 #include "esp_hidh.h"
 #include "uni_gamepad.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct
 {
     esp_bd_addr_t bda;
@@ -47,3 +51,8 @@ enum switch_proto_reqs {
 void nintendo_switch_controller_init(nintendo_switch_controller_t* controller, esp_bd_addr_t address);
 void nintendo_switch_controller_callback(esp_hidh_event_t event, esp_hidh_event_data_t *param);
 void nintendo_switch_controller_connect(nintendo_switch_controller_t* controller);
+
+
+#ifdef __cplusplus
+}
+#endif

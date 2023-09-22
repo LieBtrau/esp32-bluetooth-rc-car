@@ -1,4 +1,4 @@
-set(srcs "esp_hid_host_main.c"
+set(srcs "esp_hid_host_main.cpp"
         )
 set(include_dirs ".")
 
