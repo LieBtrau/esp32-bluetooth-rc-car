@@ -39,13 +39,13 @@ void nintendo_switch_controller_init(nintendo_switch_controller_t *controller, e
 
     // Add the controller to the table
     controllerTableSize++;
-    controllerTable = realloc(controllerTable, controllerTableSize * sizeof(nintendo_switch_controller_t *));
+    controllerTable = (nintendo_switch_controller_t**)realloc(controllerTable, controllerTableSize * sizeof(nintendo_switch_controller_t *));
     memcpy(&controllerTable[controllerTableSize - 1], &controller, sizeof(nintendo_switch_controller_t *));
 }
 
 void nintendo_switch_controller_connect(nintendo_switch_controller_t *controller)
 {
-    hid_connect(controller->bda, controller->transport, 0);
+    hid_connect(controller->bda, controller->transport, BLE_ADDR_TYPE_PUBLIC);
 }
 
 void nintendo_switch_controller_callback(esp_hidh_event_t event, esp_hidh_event_data_t *param)

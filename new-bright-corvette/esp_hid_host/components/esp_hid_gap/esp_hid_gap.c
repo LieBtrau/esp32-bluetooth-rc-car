@@ -20,9 +20,9 @@ static const char *TAG = "ESP_HID_GAP";
 // uncomment to print all devices that were seen during a scan
 #define GAP_DBG_PRINTF(...) /*printf(__VA_ARGS__)*/
 
-#if CONFIG_BT_HID_HOST_ENABLED
-static const char * gap_bt_prop_type_names[5] = {"","BDNAME","COD","RSSI","EIR"};
-#endif
+// #if CONFIG_BT_HID_HOST_ENABLED
+// static const char * gap_bt_prop_type_names[5] = {"","BDNAME","COD","RSSI","EIR"};
+// #endif
 
 static esp_hid_scan_result_t *bt_scan_results = NULL;
 static size_t num_bt_scan_results = 0;

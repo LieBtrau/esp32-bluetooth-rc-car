@@ -1,4 +1,4 @@
-set(srcs "nintendo_switch_controller.c")
+set(srcs "nintendo_switch_controller.cpp")
 set(include_dirs "include")
 
 idf_component_register(SRCS  "${srcs}"

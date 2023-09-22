@@ -1,5 +1,5 @@
 /**
- * @file esp_hid_host_main.c
+ * @file esp_hid_host_main.cpp
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
@@ -44,7 +44,7 @@ void hid_demo_task(void *pvParameters)
 {
     esp_bd_addr_t bluetooth_address = {0x98, 0xb6, 0xe9, 0x54, 0x85, 0x38};
 
-    scan_hid_device(bluetooth_address, 10, NULL);
+    //scan_hid_device(bluetooth_address, 10, NULL);
     nintendo_switch_controller_init(&controller, bluetooth_address);
     nintendo_switch_controller_connect(&controller);
 
