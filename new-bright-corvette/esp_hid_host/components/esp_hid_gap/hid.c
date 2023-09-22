@@ -100,7 +100,10 @@ bool scan_hid_device(esp_bd_addr_t address_to_find, uint32_t scan_duration_secon
             }
 #endif /* CONFIG_BT_HID_HOST_ENABLED */
             printf("NAME: %s ", r->name ? r->name : "");
-            *addr_type = r->ble.addr_type;
+            if(addr_type != NULL)
+            {
+                *addr_type = r->ble.addr_type;
+            }
             printf("\n");
             break;
         }
