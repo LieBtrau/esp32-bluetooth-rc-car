@@ -14,7 +14,7 @@
 #include "bdc_motor.h"
 
 static const char *TAG = "example";
-#define CONFIG_FREERTOS_HZ 100 // 10ms tick (as in menuconfig), @todo : find a way to get this value from menuconfig
+//#define CONFIG_FREERTOS_HZ 100 // 10ms tick (as in menuconfig), @todo : find a way to get this value from menuconfig
 
 // Enable this config,  we will print debug formated string, which in return can be captured and parsed by Serial-Studio
 #define SERIAL_STUDIO_DEBUG CONFIG_SERIAL_STUDIO_DEBUG
