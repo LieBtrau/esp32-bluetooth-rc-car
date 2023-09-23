@@ -25,20 +25,6 @@ limitations under the License.
 #include "esp_hidh.h"
 #include "uni_gamepad.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct
-{
-    esp_bd_addr_t bda;
-    esp_hid_transport_t transport;
-    bool is_connected;
-    uni_gamepad_t gamepad;
-    uni_gamepad_t last_gamepad;
-    QueueHandle_t buttonStateQueue;
-}nintendo_switch_controller_t;
-
 // Taken from Linux kernel: hid-nintendo.c
 enum switch_proto_reqs {
     /* Input Reports */
@@ -48,11 +34,22 @@ enum switch_proto_reqs {
     SWITCH_INPUT_BUTTON_EVENT = 0x3F,
 };
 
-void nintendo_switch_controller_init(nintendo_switch_controller_t* controller, esp_bd_addr_t address);
-void nintendo_switch_controller_callback(esp_hidh_event_t event, esp_hidh_event_data_t *param);
-void nintendo_switch_controller_connect(nintendo_switch_controller_t* controller);
+class NintendoSwitchController
+{
+public:
+    NintendoSwitchController(const esp_bd_addr_t address);
+    void connect();
+    void disconnect();
+    bool hasAddress(const uint8_t *address);
+    void setConnected(bool isConnected) { is_connected = isConnected; }
+    void parse_input_buttons(uint8_t *data, size_t len);
+    bool isUpdateAvailable(uni_gamepad_t *gamepad);
+private:
+    esp_bd_addr_t bda;
+    esp_hid_transport_t transport;
+    bool is_connected;
+    uni_gamepad_t last_gamepad;
+    QueueHandle_t buttonStateQueue;
+};
 
-
-#ifdef __cplusplus
-}
-#endif
+void addController(NintendoSwitchController *controller);

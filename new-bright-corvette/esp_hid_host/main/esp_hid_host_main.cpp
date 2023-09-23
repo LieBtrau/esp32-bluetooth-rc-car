@@ -1,10 +1,10 @@
 /**
  * @file esp_hid_host_main.cpp
  * @author your name (you@domain.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-08-14
- * 
+ *
  * @copyright Copyright (c) 2023
  * @details
  *  * heavily based on [https://github.com/espressif/esp-idf/tree/3befd5fff7/examples/bluetooth/esp_hid_host]
@@ -38,24 +38,24 @@
 static const char *TAG = "ESP_HIDH_DEMO";
 static TaskHandle_t xTask1;
 
-nintendo_switch_controller_t controller;
+
 
 void hid_demo_task(void *pvParameters)
 {
-    esp_bd_addr_t bluetooth_address = {0x98, 0xb6, 0xe9, 0x54, 0x85, 0x38};
+    // scan_hid_device(bluetooth_address, 10, NULL);
+    const esp_bd_addr_t bluetooth_address = {0x98, 0xb6, 0xe9, 0x54, 0x85, 0x38};
+    NintendoSwitchController controller(bluetooth_address);
+    addController(&controller);
 
-    //scan_hid_device(bluetooth_address, 10, NULL);
-    nintendo_switch_controller_init(&controller, bluetooth_address);
-    nintendo_switch_controller_connect(&controller);
+    controller.connect();
 
     uni_gamepad_t gamepad;
     for (;;)
     {
-        if (xQueueReceive(controller.buttonStateQueue, &gamepad, (TickType_t)10) == pdPASS)
+        if (controller.isUpdateAvailable(&gamepad))
         {
             ESP_LOGI(TAG, "Button state: %d", gamepad.dpad);
         }
-
     }
     vTaskDelete(NULL);
 }
@@ -75,4 +75,5 @@ extern "C" void app_main(void)
     hid_init();
 
     xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, &xTask1);
+    vTaskDelay(portMAX_DELAY);
 }
