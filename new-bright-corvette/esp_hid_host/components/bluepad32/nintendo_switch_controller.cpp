@@ -34,10 +34,8 @@ NintendoSwitchController::NintendoSwitchController(const esp_bd_addr_t address) 
     {
         ESP_LOGE(TAG, "Failed to create buttonStateQueue");
     }
-}
 
-void addController(NintendoSwitchController *controller)
-{
+    // Add the controller to the table
     NintendoSwitchController **newTable = (NintendoSwitchController **)realloc(controllerTable, sizeof(NintendoSwitchController *) * (controllerTableSize + 1));
     if (newTable == NULL)
     {
@@ -45,7 +43,7 @@ void addController(NintendoSwitchController *controller)
         return;
     }
     controllerTable = newTable;
-    controllerTable[controllerTableSize] = controller;
+    controllerTable[controllerTableSize] = this;
     controllerTableSize++;
 }
 
@@ -57,7 +55,6 @@ void NintendoSwitchController::connect()
 
 bool NintendoSwitchController::hasAddress(const uint8_t *address)
 {
-    ESP_LOG_BUFFER_HEX(TAG, bda, sizeof(esp_bd_addr_t));
     return memcmp(bda, address, sizeof(esp_bd_addr_t)) == 0;
 }
 

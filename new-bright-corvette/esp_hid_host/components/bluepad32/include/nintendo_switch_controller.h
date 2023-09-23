@@ -51,5 +51,3 @@ private:
     uni_gamepad_t last_gamepad;
     QueueHandle_t buttonStateQueue;
 };
-
-void addController(NintendoSwitchController *controller);

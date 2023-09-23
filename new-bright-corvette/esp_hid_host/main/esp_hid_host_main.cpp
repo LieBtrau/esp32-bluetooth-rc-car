@@ -45,7 +45,6 @@ void hid_demo_task(void *pvParameters)
     // scan_hid_device(bluetooth_address, 10, NULL);
     const esp_bd_addr_t bluetooth_address = {0x98, 0xb6, 0xe9, 0x54, 0x85, 0x38};
     NintendoSwitchController controller(bluetooth_address);
-    addController(&controller);
 
     controller.connect();
 
