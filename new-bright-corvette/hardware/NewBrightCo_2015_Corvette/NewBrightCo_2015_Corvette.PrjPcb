@@ -207,9 +207,10 @@ UniqueID=7DA9A713-88B1-4C79-9D19-C28A87FF7A0D
 Description=A
 AllowFabrication=0
 ParameterCount=0
-VariationCount=2
+VariationCount=3
 Variation1=Designator=R1|UniqueId=\ZCGQCKBF|Kind=1|AlternatePart= 
 Variation2=Designator=R8|UniqueId=\SRFEQTGI|Kind=1|AlternatePart= 
+Variation3=Designator=R1|UniqueId=\DFLLWRDJ|Kind=0|AlternatePart= 
 ParamVariationCount=0
 
 [GeneratedDocument1]
@@ -268,6 +269,58 @@ DItemRevisionGUID=
 DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board assembly output\BOM\NBRCOR_E1.00A__BOM.xlsx
 DItemRevisionGUID=
 
+[GeneratedDocument15]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.DRR
+DItemRevisionGUID=
+
+[GeneratedDocument16]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.EXTREP
+DItemRevisionGUID=
+
+[GeneratedDocument17]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.GBL
+DItemRevisionGUID=
+
+[GeneratedDocument18]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.GBO
+DItemRevisionGUID=
+
+[GeneratedDocument19]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.GBS
+DItemRevisionGUID=
+
+[GeneratedDocument20]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.GM2
+DItemRevisionGUID=
+
+[GeneratedDocument21]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.GTL
+DItemRevisionGUID=
+
+[GeneratedDocument22]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.GTO
+DItemRevisionGUID=
+
+[GeneratedDocument23]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.GTS
+DItemRevisionGUID=
+
+[GeneratedDocument24]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.LDP
+DItemRevisionGUID=
+
+[GeneratedDocument25]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.REP
+DItemRevisionGUID=
+
+[GeneratedDocument26]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.RUL
+DItemRevisionGUID=
+
+[GeneratedDocument27]
+DocumentPath=Project Outputs for NewBrightCo_2015_Corvette\Board manufacturing output (GBR)\E1.10\NBRCOR_E1.10.TXT
+DItemRevisionGUID=
+
 [Parameter1]
 Name=board_name
 Value=NBRCOR
@@ -278,7 +331,7 @@ Value=https://github.com/LieBtrau/esp32-bluetooth-rc-car
 
 [Parameter3]
 Name=project_revision
-Value=E1.00
+Value=E1.10
 
 [Configuration1]
 Name=Sources
@@ -1007,6 +1060,16 @@ Type117=1
 Type118=1
 Type119=1
 Type120=1
+Type121=1
+Type122=1
+Type123=1
+Type124=1
+Type125=1
+Type126=1
+Type127=1
+Type128=1
+Type129=1
+Type130=1
 
 [Difference Levels]
 Type1=1
@@ -1077,6 +1140,12 @@ Type65=1
 Type66=1
 Type67=1
 Type68=1
+Type69=1
+Type70=1
+Type71=1
+Type72=1
+Type73=1
+Type74=1
 
 [Electrical Rules Check]
 Type1=1
@@ -1205,6 +1274,30 @@ Type124=1
 Type125=1
 Type126=1
 Type127=1
+Type128=2
+Type129=2
+Type130=2
+Type131=2
+Type132=2
+Type133=2
+Type134=2
+Type135=2
+Type136=2
+Type137=2
+Type138=1
+Type139=1
+Type140=1
+Type141=1
+Type142=1
+Type143=1
+Type144=1
+Type145=1
+Type146=1
+Type147=2
+Type148=2
+Type149=2
+Type150=2
+Type151=2
 
 [ERC Connection Matrix]
 L1=NNNNNNNNNNNWNNNWN
@@ -1251,162 +1344,174 @@ SelectedOnly=0
 UpdateVariants=1
 UpdateToLatestRevision=1
 PartTypes=0
-ComponentLibIdentifierKind0=Library Name Only
-ComponentLibraryIdentifier0=7c7 Engineering
-ComponentDesignItemID0=CMP-00003-3
-ComponentSymbolReference0=ESP32-WROOM-32E
+ComponentLibIdentifierKind0=Library Name And Type
+ComponentLibraryIdentifier0=Integrated_Library_LieBtrau.IntLib
+ComponentDesignItemID0=Logo
+ComponentSymbolReference0=Logo
 ComponentUpdate0=1
 ComponentIsDeviceSheet0=0
 ComponentLibIdentifierKind1=Library Name Only
 ComponentLibraryIdentifier1=7c7 Engineering
-ComponentDesignItemID1=CMP-001-0034-2
-ComponentSymbolReference1=BAT_1_2
+ComponentDesignItemID1=CMP-00003-4
+ComponentSymbolReference1=ESP32-WROOM-32E
 ComponentUpdate1=1
 ComponentIsDeviceSheet1=0
 ComponentLibIdentifierKind2=Library Name Only
 ComponentLibraryIdentifier2=7c7 Engineering
-ComponentDesignItemID2=CMP-002-000028-7
-ComponentSymbolReference2=490107670612
+ComponentDesignItemID2=CMP-001-0034-5
+ComponentSymbolReference2=BAT_1_2
 ComponentUpdate2=1
 ComponentIsDeviceSheet2=0
 ComponentLibIdentifierKind3=Library Name Only
 ComponentLibraryIdentifier3=7c7 Engineering
-ComponentDesignItemID3=CMP-002-001560-2
-ComponentSymbolReference3=XR2981
+ComponentDesignItemID3=CMP-002-000028-7
+ComponentSymbolReference3=490107670612
 ComponentUpdate3=1
 ComponentIsDeviceSheet3=0
 ComponentLibIdentifierKind4=Library Name Only
 ComponentLibraryIdentifier4=7c7 Engineering
-ComponentDesignItemID4=CMP-004-00048-2
-ComponentSymbolReference4=DIODE-SKY-2
+ComponentDesignItemID4=CMP-002-001560-3
+ComponentSymbolReference4=XR2981
 ComponentUpdate4=1
 ComponentIsDeviceSheet4=0
 ComponentLibIdentifierKind5=Library Name Only
 ComponentLibraryIdentifier5=7c7 Engineering
-ComponentDesignItemID5=CMP-004-00051-1
+ComponentDesignItemID5=CMP-004-00048-3
 ComponentSymbolReference5=DIODE-SKY-2
 ComponentUpdate5=1
 ComponentIsDeviceSheet5=0
 ComponentLibIdentifierKind6=Library Name Only
 ComponentLibraryIdentifier6=7c7 Engineering
-ComponentDesignItemID6=CMP-009-00006-19
-ComponentSymbolReference6=RES
+ComponentDesignItemID6=CMP-004-00051-2
+ComponentSymbolReference6=DIODE-SKY-2
 ComponentUpdate6=1
 ComponentIsDeviceSheet6=0
 ComponentLibIdentifierKind7=Library Name Only
 ComponentLibraryIdentifier7=7c7 Engineering
-ComponentDesignItemID7=CMP-009-00031-20
+ComponentDesignItemID7=CMP-009-00006-19
 ComponentSymbolReference7=RES
 ComponentUpdate7=1
 ComponentIsDeviceSheet7=0
 ComponentLibIdentifierKind8=Library Name Only
 ComponentLibraryIdentifier8=7c7 Engineering
-ComponentDesignItemID8=CMP-009-00232-11
+ComponentDesignItemID8=CMP-009-00031-20
 ComponentSymbolReference8=RES
 ComponentUpdate8=1
 ComponentIsDeviceSheet8=0
 ComponentLibIdentifierKind9=Library Name Only
 ComponentLibraryIdentifier9=7c7 Engineering
-ComponentDesignItemID9=CMP-009-00243-11
+ComponentDesignItemID9=CMP-009-00232-11
 ComponentSymbolReference9=RES
 ComponentUpdate9=1
 ComponentIsDeviceSheet9=0
 ComponentLibIdentifierKind10=Library Name Only
 ComponentLibraryIdentifier10=7c7 Engineering
-ComponentDesignItemID10=CMP-009-00275-7
+ComponentDesignItemID10=CMP-009-00243-11
 ComponentSymbolReference10=RES
 ComponentUpdate10=1
 ComponentIsDeviceSheet10=0
 ComponentLibIdentifierKind11=Library Name Only
 ComponentLibraryIdentifier11=7c7 Engineering
-ComponentDesignItemID11=CMP-009-00322-2
+ComponentDesignItemID11=CMP-009-00275-7
 ComponentSymbolReference11=RES
 ComponentUpdate11=1
 ComponentIsDeviceSheet11=0
 ComponentLibIdentifierKind12=Library Name Only
 ComponentLibraryIdentifier12=7c7 Engineering
-ComponentDesignItemID12=CMP-013-00048-9
-ComponentSymbolReference12=BJT-NPN-BEC
+ComponentDesignItemID12=CMP-009-00322-2
+ComponentSymbolReference12=RES
 ComponentUpdate12=1
 ComponentIsDeviceSheet12=0
 ComponentLibIdentifierKind13=Library Name Only
 ComponentLibraryIdentifier13=7c7 Engineering
-ComponentDesignItemID13=CMP-013-00054-5
-ComponentSymbolReference13=NEMOS-GSD-3_C
+ComponentDesignItemID13=CMP-013-00048-9
+ComponentSymbolReference13=BJT-NPN-BEC
 ComponentUpdate13=1
 ComponentIsDeviceSheet13=0
 ComponentLibIdentifierKind14=Library Name Only
 ComponentLibraryIdentifier14=7c7 Engineering
-ComponentDesignItemID14=CMP-013-00056-5
-ComponentSymbolReference14=PEMOS-GSD-3
+ComponentDesignItemID14=CMP-013-00054-5
+ComponentSymbolReference14=NEMOS-GSD-3_C
 ComponentUpdate14=1
 ComponentIsDeviceSheet14=0
 ComponentLibIdentifierKind15=Library Name Only
 ComponentLibraryIdentifier15=7c7 Engineering
-ComponentDesignItemID15=CMP-013-00060-2
-ComponentSymbolReference15=FS8205A
+ComponentDesignItemID15=CMP-013-00056-5
+ComponentSymbolReference15=PEMOS-GSD-3
 ComponentUpdate15=1
 ComponentIsDeviceSheet15=0
 ComponentLibIdentifierKind16=Library Name Only
 ComponentLibraryIdentifier16=7c7 Engineering
-ComponentDesignItemID16=CMP-014-00008-4
-ComponentSymbolReference16=LMV321IDBVR
+ComponentDesignItemID16=CMP-013-00060-3
+ComponentSymbolReference16=FS8205A
 ComponentUpdate16=1
 ComponentIsDeviceSheet16=0
 ComponentLibIdentifierKind17=Library Name Only
 ComponentLibraryIdentifier17=7c7 Engineering
-ComponentDesignItemID17=CMP-019-00081-5
-ComponentSymbolReference17=LDO-with-enable
+ComponentDesignItemID17=CMP-014-00008-4
+ComponentSymbolReference17=LMV321IDBVR
 ComponentUpdate17=1
 ComponentIsDeviceSheet17=0
 ComponentLibIdentifierKind18=Library Name Only
 ComponentLibraryIdentifier18=7c7 Engineering
-ComponentDesignItemID18=CMP-019-00088-3
-ComponentSymbolReference18=DW01A
+ComponentDesignItemID18=CMP-019-00081-5
+ComponentSymbolReference18=LDO-with-enable
 ComponentUpdate18=1
 ComponentIsDeviceSheet18=0
 ComponentLibIdentifierKind19=Library Name Only
 ComponentLibraryIdentifier19=7c7 Engineering
-ComponentDesignItemID19=CMP-047-000040-8
-ComponentSymbolReference19=HDR_2P
+ComponentDesignItemID19=CMP-019-00088-3
+ComponentSymbolReference19=DW01A
 ComponentUpdate19=1
 ComponentIsDeviceSheet19=0
 ComponentLibIdentifierKind20=Library Name Only
 ComponentLibraryIdentifier20=7c7 Engineering
-ComponentDesignItemID20=CMP-072-000094-12
-ComponentSymbolReference20=CAP-NP-2
+ComponentDesignItemID20=CMP-047-000040-8
+ComponentSymbolReference20=HDR_2P
 ComponentUpdate20=1
 ComponentIsDeviceSheet20=0
 ComponentLibIdentifierKind21=Library Name Only
 ComponentLibraryIdentifier21=7c7 Engineering
-ComponentDesignItemID21=CMP-072-000593-11
-ComponentSymbolReference21=CAP-NP-2
+ComponentDesignItemID21=CMP-047-000042-2
+ComponentSymbolReference21=HDR_4P
 ComponentUpdate21=1
 ComponentIsDeviceSheet21=0
 ComponentLibIdentifierKind22=Library Name Only
 ComponentLibraryIdentifier22=7c7 Engineering
-ComponentDesignItemID22=CMP-072-000659-13
+ComponentDesignItemID22=CMP-072-000094-12
 ComponentSymbolReference22=CAP-NP-2
 ComponentUpdate22=1
 ComponentIsDeviceSheet22=0
 ComponentLibIdentifierKind23=Library Name Only
 ComponentLibraryIdentifier23=7c7 Engineering
-ComponentDesignItemID23=CMP-072-000663-12
+ComponentDesignItemID23=CMP-072-000593-11
 ComponentSymbolReference23=CAP-NP-2
 ComponentUpdate23=1
 ComponentIsDeviceSheet23=0
 ComponentLibIdentifierKind24=Library Name Only
 ComponentLibraryIdentifier24=7c7 Engineering
-ComponentDesignItemID24=CMP-086-000079-1
-ComponentSymbolReference24=7443739650068
+ComponentDesignItemID24=CMP-072-000659-13
+ComponentSymbolReference24=CAP-NP-2
 ComponentUpdate24=1
 ComponentIsDeviceSheet24=0
 ComponentLibIdentifierKind25=Library Name Only
 ComponentLibraryIdentifier25=7c7 Engineering
-ComponentDesignItemID25=CMP-098-000013-1
-ComponentSymbolReference25=870025575009
+ComponentDesignItemID25=CMP-072-000663-12
+ComponentSymbolReference25=CAP-NP-2
 ComponentUpdate25=1
 ComponentIsDeviceSheet25=0
+ComponentLibIdentifierKind26=Library Name Only
+ComponentLibraryIdentifier26=7c7 Engineering
+ComponentDesignItemID26=CMP-086-000079-3
+ComponentSymbolReference26=7443739650068
+ComponentUpdate26=1
+ComponentIsDeviceSheet26=0
+ComponentLibIdentifierKind27=Library Name Only
+ComponentLibraryIdentifier27=7c7 Engineering
+ComponentDesignItemID27=CMP-098-000013-3
+ComponentSymbolReference27=870025575009
+ComponentUpdate27=1
+ComponentIsDeviceSheet27=0
 FullReplace=1
 UpdateDesignatorLock=1
 UpdatePartIDLock=1
@@ -1769,58 +1874,64 @@ ModelType23=PCBLIB
 ModelName23=620102131822
 ModelUpdate23=1
 ModelType24=PCBLIB
-ModelName24=BH-18650-PC-Footprint-1
+ModelName24=620104131822
 ModelUpdate24=1
 ModelType25=PCBLIB
-ModelName25=FP-ESP32-WROOM-32E_4MB-MFG
+ModelName25=BH-18650-PC-Footprint-1
 ModelUpdate25=1
 ModelType26=PCBLIB
-ModelName26=FP-SOD523-MFG
+ModelName26=FP-ESP32-WROOM-32E_4MB-MFG
 ModelUpdate26=1
 ModelType27=PCBLIB
-ModelName27=PMEG045V100EIPEZ-Footprint-1
+ModelName27=FP-SOD523-MFG
 ModelUpdate27=1
 ModelType28=PCBLIB
-ModelName28=SOIC8_N_EP
+ModelName28=LOGO_9x6mm
 ModelUpdate28=1
 ModelType29=PCBLIB
-ModelName29=SOT-23-3-L
+ModelName29=PMEG045V100EIPEZ-Footprint-1
 ModelUpdate29=1
 ModelType30=PCBLIB
-ModelName30=SOT-23-3-M
+ModelName30=SOIC8_N_EP
 ModelUpdate30=1
 ModelType31=PCBLIB
-ModelName31=SOT-23-3-N
+ModelName31=SOT-23-3-L
 ModelUpdate31=1
 ModelType32=PCBLIB
-ModelName32=SOT-23-6
+ModelName32=SOT-23-3-M
 ModelUpdate32=1
 ModelType33=PCBLIB
-ModelName33=SOT25-L
+ModelName33=SOT-23-3-N
 ModelUpdate33=1
 ModelType34=PCBLIB
-ModelName34=SOT25-M
+ModelName34=SOT-23-6
 ModelUpdate34=1
 ModelType35=PCBLIB
-ModelName35=SOT25-MFG
+ModelName35=SOT25-L
 ModelUpdate35=1
 ModelType36=PCBLIB
-ModelName36=SOT25-N
+ModelName36=SOT25-M
 ModelUpdate36=1
 ModelType37=PCBLIB
-ModelName37=TSSOP8
+ModelName37=SOT25-MFG
 ModelUpdate37=1
 ModelType38=PCBLIB
-ModelName38=WCAP-PTG5_D8H11.5
+ModelName38=SOT25-N
 ModelUpdate38=1
 ModelType39=PCBLIB
-ModelName39=WE-LHMI_7050
+ModelName39=TSSOP8
 ModelUpdate39=1
+ModelType40=PCBLIB
+ModelName40=WCAP-PTG5_D8H11.5
+ModelUpdate40=1
+ModelType41=PCBLIB
+ModelName41=WE-LHMI_7050
+ModelUpdate41=1
 ModelTypeGroup1=SIM
 ModelTypeUpdate1=1
-ModelType40=SIM
-ModelName40=870025374001_100uF
-ModelUpdate40=1
+ModelType42=SIM
+ModelName42=870025374001_100uF
+ModelUpdate42=1
 
 [DatabaseUpdateOptions]
 SelectedOnly=0
