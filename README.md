@@ -13,4 +13,15 @@ No PCB, only breadboarding.
 ## New Bright Corvette
 
 ### Hardware
+## E1.10
+### Improvements
+* discrete H-bridge replaced by integrated H-bridge driver
+* inductor replaced by a larger one to increase efficiency
+
+### Design files
+[Design files of E1.10 on Altium 365](https://365.altium.com/files/05B81435-747B-408E-BC14-2B5918D64BF6)
+
+## E1.00
+
+### Design files
 [Design files of E1.00 on Altium 365](https://365.altium.com/files/AEBBFAE9-1145-4C68-8DCB-2F8D6A6142A4) : for easy browsing and sharing
