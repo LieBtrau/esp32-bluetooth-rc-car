@@ -16,6 +16,8 @@
 #include "nintendo_switch_controller.h"
 #include "hid.h"
 #include "bdc_motor.h"
+#include "pins.h"
+#include "driver/gpio.h"
 
 static const char *TAG = "ESP_HIDH_DEMO";
 static QueueHandle_t xSteerQueue = NULL;
@@ -55,8 +57,8 @@ void thrust_motor_task(void *pvParameters)
     const uint32_t BDC_MCPWM_DUTY_TICK_MIN = 50 * BDC_MCPWM_DUTY_TICK_MAX / 100;                // minimum PWM value needed for the motor to spin
     ESP_LOGI(TAG, "Create DC motors");
     bdc_motor_config_t motor1_config = {
-        .pwma_gpio_num = 22,
-        .pwmb_gpio_num = 23,
+        .pwma_gpio_num = PIN_THRUST_MOTOR_A,
+        .pwmb_gpio_num = PIN_THRUST_MOTOR_B,
         .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
     };
     bdc_motor_mcpwm_config_t mcpwm_config = {
@@ -122,8 +124,8 @@ void steering_motor_task(void *pvParameters)
 
     ESP_LOGI(TAG, "Create DC motors");
     bdc_motor_config_t motor1_config = {
-        .pwma_gpio_num = 18,
-        .pwmb_gpio_num = 19,
+        .pwma_gpio_num = PIN_STEERING_MOTOR_A,
+        .pwmb_gpio_num = PIN_STEERING_MOTOR_B,
         .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
     };
     bdc_motor_mcpwm_config_t mcpwm_config = {
@@ -204,9 +206,11 @@ extern "C" void app_main(void)
     xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
     xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
 
+    ESP_ERROR_CHECK(gpio_set_direction(PIN_LED, GPIO_MODE_OUTPUT));
+    ESP_ERROR_CHECK(gpio_set_level(PIN_LED, 1));
     for (;;)
     {
-        Direction direction;
+        //Direction direction;
 
         // if (xSteerQueue != NULL)
         // {
@@ -216,7 +220,10 @@ extern "C" void app_main(void)
         //         ESP_LOGE(TAG, "Failed to send to queue");
         //     }
         // }
-        // vTaskDelay(pdMS_TO_TICKS(1000));
+        ESP_ERROR_CHECK(gpio_set_level(PIN_LED, 1));
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        ESP_ERROR_CHECK(gpio_set_level(PIN_LED, 0));
+        vTaskDelay(pdMS_TO_TICKS(1000));
         // if (xSteerQueue != NULL)
         // {
         //     direction = Direction::STRAIGHT;
@@ -226,24 +233,24 @@ extern "C" void app_main(void)
         //     }
         // }
 
-        if(xThrustQueue != NULL)
-        {
-            int thrust = 100;
-            if (xQueueSend(xThrustQueue, &thrust, (TickType_t)1) != pdPASS)
-            {
-                ESP_LOGE(TAG, "Failed to send to queue");
-            }
-        }
-        vTaskDelay(pdMS_TO_TICKS(5000));
-        if(xThrustQueue != NULL)
-        {
-            int thrust = -100;
-            if (xQueueSend(xThrustQueue, &thrust, (TickType_t)1) != pdPASS)
-            {
-                ESP_LOGE(TAG, "Failed to send to queue");
-            }
-        }
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        // if(xThrustQueue != NULL)
+        // {
+        //     int thrust = 100;
+        //     if (xQueueSend(xThrustQueue, &thrust, (TickType_t)1) != pdPASS)
+        //     {
+        //         ESP_LOGE(TAG, "Failed to send to queue");
+        //     }
+        // }
+        // vTaskDelay(pdMS_TO_TICKS(5000));
+        // if(xThrustQueue != NULL)
+        // {
+        //     int thrust = -100;
+        //     if (xQueueSend(xThrustQueue, &thrust, (TickType_t)1) != pdPASS)
+        //     {
+        //         ESP_LOGE(TAG, "Failed to send to queue");
+        //     }
+        // }
+        // vTaskDelay(pdMS_TO_TICKS(5000));
 
         // bdc_motor_brake() causes both outputs to be high.
         //  bdc_motor_coast() causes both outputs to be low.  equivalent to setting motor speed to 0.
