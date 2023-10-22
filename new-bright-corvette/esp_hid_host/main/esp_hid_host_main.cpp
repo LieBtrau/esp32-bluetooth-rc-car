@@ -18,7 +18,6 @@
 #include "bdc_motor.h"
 
 static const char *TAG = "ESP_HIDH_DEMO";
-static TaskHandle_t xTask1, xTask2;
 static QueueHandle_t xSteerQueue = NULL;
 
 enum class Direction
@@ -56,8 +55,8 @@ void steering_motor_task(void *pvParameters)
 
     ESP_LOGI(TAG, "Create DC motors");
     bdc_motor_config_t motor1_config = {
-        .pwma_gpio_num = 22,
-        .pwmb_gpio_num = 23,
+        .pwma_gpio_num = 18,
+        .pwmb_gpio_num = 19,
         .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
     };
     bdc_motor_mcpwm_config_t mcpwm_config = {
