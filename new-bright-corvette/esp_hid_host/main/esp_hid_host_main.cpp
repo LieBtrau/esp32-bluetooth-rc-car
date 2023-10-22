@@ -19,6 +19,7 @@
 
 static const char *TAG = "ESP_HIDH_DEMO";
 static QueueHandle_t xSteerQueue = NULL;
+static QueueHandle_t xThrustQueue = NULL;
 
 enum class Direction
 {
@@ -46,6 +47,74 @@ void hid_demo_task(void *pvParameters)
     vTaskDelete(NULL);
 }
 
+void thrust_motor_task(void *pvParameters)
+{
+    const uint32_t BDC_MCPWM_TIMER_RESOLUTION_HZ = 10e6;                                        // 10MHz
+    const uint32_t BDC_MCPWM_FREQ_HZ = 20000;                                                   // PWM frequency
+    const uint32_t BDC_MCPWM_DUTY_TICK_MAX = BDC_MCPWM_TIMER_RESOLUTION_HZ / BDC_MCPWM_FREQ_HZ; // maximum value we can set for the duty cycle, in ticks
+
+    ESP_LOGI(TAG, "Create DC motors");
+    bdc_motor_config_t motor1_config = {
+        .pwma_gpio_num = 22,
+        .pwmb_gpio_num = 23,
+        .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
+    };
+    bdc_motor_mcpwm_config_t mcpwm_config = {
+        .group_id = 0,
+        .resolution_hz = BDC_MCPWM_TIMER_RESOLUTION_HZ,
+    };
+    bdc_motor_handle_t thrust_motor = NULL /*, motor2 = NULL*/;
+    ESP_ERROR_CHECK(bdc_motor_new_mcpwm_device(&motor1_config, &mcpwm_config, &thrust_motor));
+    ESP_LOGI(TAG, "Enable thrust");
+    ESP_ERROR_CHECK(bdc_motor_enable(thrust_motor));
+    ESP_ERROR_CHECK(bdc_motor_forward(thrust_motor));
+    int sollThrust = 0;
+    int currentThrust = 0;
+    for (;;)
+    {
+        if (xThrustQueue != NULL)
+        {
+            if (xQueueReceive(xThrustQueue, &sollThrust, (TickType_t)1) == pdPASS)
+            {
+                sollThrust = sollThrust > 100 ? 100 : (sollThrust < -100 ? -100 : sollThrust);
+                ESP_LOGI(TAG, "SollThrust: %d", sollThrust);
+            }
+        }
+        // Set thrust
+        if (sollThrust > currentThrust)
+        {
+            currentThrust++;
+        }
+        else if (sollThrust < currentThrust)
+        {
+            currentThrust--;
+        }
+        ESP_ERROR_CHECK(bdc_motor_set_speed(thrust_motor, (currentThrust < 0 ? -currentThrust : currentThrust) * BDC_MCPWM_DUTY_TICK_MAX / 100));
+
+        // Set motor direction
+        if(currentThrust == 0)
+        {
+            if(sollThrust > 0)
+            {
+                ESP_LOGI(TAG, "Forward");
+                ESP_ERROR_CHECK(bdc_motor_forward(thrust_motor));
+            }
+            else if(sollThrust < 0)
+            {
+                ESP_LOGI(TAG, "Reverse");
+                ESP_ERROR_CHECK(bdc_motor_reverse(thrust_motor));
+            }
+            else
+            {
+                ESP_LOGI(TAG, "Coast");
+                ESP_ERROR_CHECK(bdc_motor_coast(thrust_motor));
+            }
+        }
+        ESP_LOGI(TAG, "Thrust: %d", currentThrust);
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
 void steering_motor_task(void *pvParameters)
 {
     const uint32_t BDC_MCPWM_TIMER_RESOLUTION_HZ = 10e6;                                        // 10MHz
@@ -65,7 +134,7 @@ void steering_motor_task(void *pvParameters)
     };
     bdc_motor_handle_t steering_motor = NULL /*, motor2 = NULL*/;
     ESP_ERROR_CHECK(bdc_motor_new_mcpwm_device(&motor1_config, &mcpwm_config, &steering_motor));
-    ESP_LOGI(TAG, "Enable motor1");
+    ESP_LOGI(TAG, "Enable steering");
     ESP_ERROR_CHECK(bdc_motor_enable(steering_motor));
     ESP_ERROR_CHECK(bdc_motor_coast(steering_motor));
     int pwm_duty = 0;
@@ -97,6 +166,7 @@ void steering_motor_task(void *pvParameters)
                 }
             }
         }
+        // To save power during the turning, the PWM duty cycle is gradually reduced to the minimum value needed to hold the motor in place.
         if (pwm_duty >= BDC_MCPWM_DUTY_TICK_MIN_HOLD)
         {
             ESP_ERROR_CHECK(bdc_motor_set_speed(steering_motor, pwm_duty));
@@ -126,44 +196,57 @@ extern "C" void app_main(void)
         ESP_LOGE(TAG, "Failed to create queue");
     }
 
-    //xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, &xTask1);
-    xTaskCreate(&steering_motor_task, "steering_motor_task", 6*1024, NULL, 3, nullptr); //make sure to allocate enough stack space for the task
+    xThrustQueue = xQueueCreate(10, sizeof(int));
+    if (xThrustQueue == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to create queue");
+    }
 
-    // bdc_motor_config_t motor2_config = {
-    //     .pwma_gpio_num = 18,
-    //     .pwmb_gpio_num = 19,
-    //     .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
-    // };
-    // ESP_ERROR_CHECK(bdc_motor_new_mcpwm_device(&motor2_config, &mcpwm_config, &motor2));
-    // ESP_LOGI(TAG, "Enable motor2");
-    //   ESP_ERROR_CHECK(bdc_motor_enable(motor2));
-
-    // ESP_LOGI(TAG, "Set motor speed");
-    //  bdc_motor_set_speed(motor1, BDC_MCPWM_DUTY_TICK_MAX );
-    //    bdc_motor_set_speed(motor2, 0 /*25% duty cycle*/);
+    // xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, &xTask1);
+    xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
+    xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
 
     for (;;)
     {
         Direction direction;
 
-        if (xSteerQueue != NULL)
+        // if (xSteerQueue != NULL)
+        // {
+        //     direction = Direction::LEFT;
+        //     if (xQueueSend(xSteerQueue, &direction, (TickType_t)1) != pdPASS)
+        //     {
+        //         ESP_LOGE(TAG, "Failed to send to queue");
+        //     }
+        // }
+        // vTaskDelay(pdMS_TO_TICKS(1000));
+        // if (xSteerQueue != NULL)
+        // {
+        //     direction = Direction::STRAIGHT;
+        //     if (xQueueSend(xSteerQueue, &direction, (TickType_t)1) != pdPASS)
+        //     {
+        //         ESP_LOGE(TAG, "Failed to send to queue");
+        //     }
+        // }
+
+        if(xThrustQueue != NULL)
         {
-            direction = Direction::LEFT;
-            if (xQueueSend(xSteerQueue, &direction, (TickType_t)1) != pdPASS)
+            int thrust = 100;
+            if (xQueueSend(xThrustQueue, &thrust, (TickType_t)1) != pdPASS)
             {
                 ESP_LOGE(TAG, "Failed to send to queue");
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        if (xSteerQueue != NULL)
+        vTaskDelay(pdMS_TO_TICKS(5000));
+        if(xThrustQueue != NULL)
         {
-            direction = Direction::STRAIGHT;
-            if (xQueueSend(xSteerQueue, &direction, (TickType_t)1) != pdPASS)
+            int thrust = -100;
+            if (xQueueSend(xThrustQueue, &thrust, (TickType_t)1) != pdPASS)
             {
                 ESP_LOGE(TAG, "Failed to send to queue");
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
         // bdc_motor_brake() causes both outputs to be high.
         //  bdc_motor_coast() causes both outputs to be low.  equivalent to setting motor speed to 0.
         //       ESP_ERROR_CHECK(bdc_motor_forward(motor2));
