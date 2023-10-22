@@ -52,7 +52,7 @@ void thrust_motor_task(void *pvParameters)
     const uint32_t BDC_MCPWM_TIMER_RESOLUTION_HZ = 10e6;                                        // 10MHz
     const uint32_t BDC_MCPWM_FREQ_HZ = 20000;                                                   // PWM frequency
     const uint32_t BDC_MCPWM_DUTY_TICK_MAX = BDC_MCPWM_TIMER_RESOLUTION_HZ / BDC_MCPWM_FREQ_HZ; // maximum value we can set for the duty cycle, in ticks
-
+    const uint32_t BDC_MCPWM_DUTY_TICK_MIN = 50 * BDC_MCPWM_DUTY_TICK_MAX / 100;                // minimum PWM value needed for the motor to spin
     ESP_LOGI(TAG, "Create DC motors");
     bdc_motor_config_t motor1_config = {
         .pwma_gpio_num = 22,
@@ -89,28 +89,26 @@ void thrust_motor_task(void *pvParameters)
         {
             currentThrust--;
         }
-        ESP_ERROR_CHECK(bdc_motor_set_speed(thrust_motor, (currentThrust < 0 ? -currentThrust : currentThrust) * BDC_MCPWM_DUTY_TICK_MAX / 100));
+        // It's no use setting PWM-values below the minimum value needed for the motor to spin.
+        ESP_ERROR_CHECK(bdc_motor_set_speed(thrust_motor, BDC_MCPWM_DUTY_TICK_MIN + 
+            (currentThrust < 0 ? -currentThrust : currentThrust) * (BDC_MCPWM_DUTY_TICK_MAX-BDC_MCPWM_DUTY_TICK_MIN) / 100));
 
         // Set motor direction
         if(currentThrust == 0)
         {
             if(sollThrust > 0)
             {
-                ESP_LOGI(TAG, "Forward");
                 ESP_ERROR_CHECK(bdc_motor_forward(thrust_motor));
             }
             else if(sollThrust < 0)
             {
-                ESP_LOGI(TAG, "Reverse");
                 ESP_ERROR_CHECK(bdc_motor_reverse(thrust_motor));
             }
             else
             {
-                ESP_LOGI(TAG, "Coast");
                 ESP_ERROR_CHECK(bdc_motor_coast(thrust_motor));
             }
         }
-        ESP_LOGI(TAG, "Thrust: %d", currentThrust);
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
