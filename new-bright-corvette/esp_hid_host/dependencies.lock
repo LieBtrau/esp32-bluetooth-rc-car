@@ -5,11 +5,23 @@ dependencies:
       service_url: https://api.components.espressif.com/
       type: service
     version: 0.1.0
+  espressif/cmake_utilities:
+    component_hash: c3f351bed6fdb3d91bee6076740cb13d22e2c7bfcdd78969a65b46943885bbd4
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 0.5.2
+  espressif/led_indicator:
+    component_hash: a05b3bde8b5ccb660e858769e0fd83b35726b474fcd29e097077b54c4b126a69
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 0.5.1
   idf:
     component_hash: null
     source:
       type: idf
     version: 5.1.1
-manifest_hash: a0ecba0163fe224d485f6ae38489eb8de9fffc2a105954b49a27dcfc4875ab9d
+manifest_hash: a888f8e63c4a3874f0085c6b69539558128053a7b6a28879c4f5dc28e3b8530e
 target: esp32
 version: 1.0.0

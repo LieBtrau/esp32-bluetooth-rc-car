@@ -1,5 +1,6 @@
 ## IDF Component Manager Manifest File
 dependencies:
+  espressif/led_indicator: "^0.5.1"
   espressif/bdc_motor: "^0.1.0"
   ## Required IDF version
   idf:

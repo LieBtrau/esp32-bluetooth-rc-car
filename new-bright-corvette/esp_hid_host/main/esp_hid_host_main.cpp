@@ -18,6 +18,8 @@
 #include "bdc_motor.h"
 #include "pins.h"
 #include "driver/gpio.h"
+#include "led_indicator.h"
+#include "led_indicator_blink_default.h"
 
 static const char *TAG = "ESP_HIDH_DEMO";
 static QueueHandle_t xSteerQueue = NULL;
@@ -92,17 +94,17 @@ void thrust_motor_task(void *pvParameters)
             currentThrust--;
         }
         // It's no use setting PWM-values below the minimum value needed for the motor to spin.
-        ESP_ERROR_CHECK(bdc_motor_set_speed(thrust_motor, BDC_MCPWM_DUTY_TICK_MIN + 
-            (currentThrust < 0 ? -currentThrust : currentThrust) * (BDC_MCPWM_DUTY_TICK_MAX-BDC_MCPWM_DUTY_TICK_MIN) / 100));
+        ESP_ERROR_CHECK(bdc_motor_set_speed(thrust_motor, BDC_MCPWM_DUTY_TICK_MIN +
+                                                              (currentThrust < 0 ? -currentThrust : currentThrust) * (BDC_MCPWM_DUTY_TICK_MAX - BDC_MCPWM_DUTY_TICK_MIN) / 100));
 
         // Set motor direction
-        if(currentThrust == 0)
+        if (currentThrust == 0)
         {
-            if(sollThrust > 0)
+            if (sollThrust > 0)
             {
                 ESP_ERROR_CHECK(bdc_motor_forward(thrust_motor));
             }
-            else if(sollThrust < 0)
+            else if (sollThrust < 0)
             {
                 ESP_ERROR_CHECK(bdc_motor_reverse(thrust_motor));
             }
@@ -206,11 +208,22 @@ extern "C" void app_main(void)
     xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
     xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
 
-    ESP_ERROR_CHECK(gpio_set_direction(PIN_LED, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_level(PIN_LED, 1));
+    led_indicator_gpio_config_t led_indicator_gpio_config = {
+        .is_active_level_high = true,
+        .gpio_num = GPIO_NUM_26, /**< num of GPIO */
+    };
+
+    led_indicator_config_t config = {
+        .mode = LED_GPIO_MODE,
+        .led_indicator_gpio_config = &led_indicator_gpio_config,
+        .blink_lists = default_led_indicator_blink_lists,
+        .blink_list_num = (uint16_t)DEFAULT_BLINK_LIST_NUM,
+    };
+    led_indicator_handle_t led_handle = led_indicator_create(&config);
+    led_indicator_start(led_handle, BLINK_FACTORY_RESET);
     for (;;)
     {
-        //Direction direction;
+        // Direction direction;
 
         // if (xSteerQueue != NULL)
         // {
