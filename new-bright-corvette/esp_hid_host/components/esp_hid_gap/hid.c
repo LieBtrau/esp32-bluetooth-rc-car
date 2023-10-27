@@ -32,11 +32,10 @@ void hidh_callback(void *handler_args, esp_event_base_t base, int32_t id, void *
     }
 }
 
-
 /**
  * @brief Initialize HID host
  * @todo check to replace with new API as shown in the [hid device example](https://github.com/espressif/esp-idf/blob/db4308888d30ccaa93d5492a323cd85665f24831/examples/bluetooth/bluedroid/classic_bt/bt_hid_mouse_device/main/main.c)
- * @param taskHandle 
+ * @param taskHandle
  */
 void hid_init()
 {
@@ -55,13 +54,27 @@ void hid_init()
         .callback_arg = NULL,
     };
     ESP_ERROR_CHECK(esp_hidh_init(&config));
-
 }
 
-bool scan_hid_device(esp_bd_addr_t address_to_find, uint32_t scan_duration_seconds, esp_ble_addr_type_t* addr_type)
+/**
+ * @brief Scan for HID devices which match the given Class of Device (CoD) and are in pairing mode.
+ * See [Bluetooth Class of Device/Service (CoD) definitions](https://www.bluetooth.com/specifications/assigned-numbers/baseband/)
+ * @param cod_major Class of Device (CoD) major class
+ * @param cod_minor Class of Device (CoD) minor class
+ * @param scan_duration_seconds How long to scan for devices
+ * @param found_bda the Bluetooth Device Address (BDA) of the found device in case one is found.
+ * @return true
+ * @return false
+ * @example
+ * I (1113) HID: SCAN...
+ * I (10083) HID: SCAN: 1 results
+ * BT : 98:b6:e9:54:85:38, NAME: Pro Controller RSSI: -49, USAGE: GENERIC, COD: PERIPHERAL[GAMEPAD] srv 0x001, ,
+ */
+bool scan_hid_device(uint32_t cod_major, uint32_t cod_minor, uint32_t scan_duration_seconds, esp_bd_addr_t *found_bda)
 {
     size_t results_len = 0;
     esp_hid_scan_result_t *results = NULL;
+    memset(found_bda, 0, sizeof(esp_bd_addr_t));
 
     ESP_LOGI(TAG, "SCAN...");
     // start scan for HID devices
@@ -72,55 +85,47 @@ bool scan_hid_device(esp_bd_addr_t address_to_find, uint32_t scan_duration_secon
         return false;
     }
     esp_hid_scan_result_t *r = results;
-    esp_hid_scan_result_t *cr = NULL;
     while (r)
     {
-        if (!memcmp(r->bda, address_to_find, sizeof(esp_bd_addr_t)))
-        {
-            printf("  %s: " ESP_BD_ADDR_STR ", ", (r->transport == ESP_HID_TRANSPORT_BLE) ? "BLE" : "BT ", ESP_BD_ADDR_HEX(r->bda));
-            printf("RSSI: %d, ", r->rssi);
-            printf("USAGE: %s, ", esp_hid_usage_str(r->usage));
+        printf("  %s: " ESP_BD_ADDR_STR ", ", (r->transport == ESP_HID_TRANSPORT_BLE) ? "BLE" : "BT ", ESP_BD_ADDR_HEX(r->bda));
+        printf("NAME: %s ", r->name ? r->name : "");
+        printf("RSSI: %d, ", r->rssi);
+        printf("USAGE: %s, ", esp_hid_usage_str(r->usage));
 #if CONFIG_BT_BLE_ENABLED
-            if (r->transport == ESP_HID_TRANSPORT_BLE)
-            {
-                cr = r;
-                printf("APPEARANCE: 0x%04x, ", r->ble.appearance);
-                printf("ADDR_TYPE: '%s', ", ble_addr_type_str(r->ble.addr_type));
-            }
+        if (r->transport == ESP_HID_TRANSPORT_BLE)
+        {
+            printf("APPEARANCE: 0x%04x, ", r->ble.appearance);
+            printf("ADDR_TYPE: '%s', ", ble_addr_type_str(r->ble.addr_type));
+        }
 #endif /* CONFIG_BT_BLE_ENABLED */
 #if CONFIG_BT_HID_HOST_ENABLED
-            if (r->transport == ESP_HID_TRANSPORT_BT)
-            {
-                cr = r;
-                printf("COD: %s[", esp_hid_cod_major_str(r->bt.cod.major));
-                esp_hid_cod_minor_print(r->bt.cod.minor, stdout);
-                printf("] srv 0x%03x, ", r->bt.cod.service);
-                print_uuid(&r->bt.uuid);
-                printf(", ");
-            }
+        if (r->transport == ESP_HID_TRANSPORT_BT)
+        {
+            printf("COD: %s[", esp_hid_cod_major_str(r->bt.cod.major));
+            esp_hid_cod_minor_print(r->bt.cod.minor, stdout);
+            printf("] srv 0x%03x, ", r->bt.cod.service);
+            print_uuid(&r->bt.uuid);
+            printf(", ");
+        }
 #endif /* CONFIG_BT_HID_HOST_ENABLED */
-            printf("NAME: %s ", r->name ? r->name : "");
-            if(addr_type != NULL)
-            {
-                *addr_type = r->ble.addr_type;
-            }
-            printf("\n");
-            break;
+        printf("\n");
+        if (r->bt.cod.major == cod_major && r->bt.cod.minor == cod_minor)
+        {
+            memcpy(found_bda, r->bda, sizeof(esp_bd_addr_t));
         }
         r = r->next;
     }
     // free the results
     esp_hid_scan_results_free(results);
-    return cr != NULL;
+    return found_bda != NULL;
 }
-
 
 /**
  * @brief Connect to HID device
- * 
- * @param address 
- * @param transport 
- * @param addr_type 
+ *
+ * @param address
+ * @param transport
+ * @param addr_type
  * @details Only need to call this once.  The HID host will automatically try to reconnect to the device if it disconnects.
  */
 void hid_connect(esp_bd_addr_t address, esp_hid_transport_t transport, esp_ble_addr_type_t addr_type)

@@ -192,6 +192,8 @@ static void button_single_click_cb(void *arg, void *usr_data)
 extern "C" void app_main(void)
 {
     esp_err_t ret;
+    const int COD_MAJOR = 0x05; // Peripheral
+    const int COD_MINOR = 0x02; // Gamepad
 
     // Bluetooth requires NVS to connect to previously paired devices, initialize it before Bluetooth
     ret = nvs_flash_init();
@@ -202,6 +204,15 @@ extern "C" void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
     hid_init();
+    esp_bd_addr_t bluetooth_address;
+    if(scan_hid_device(COD_MAJOR, COD_MINOR, 10, &bluetooth_address))
+    {
+        ESP_LOGI(TAG, "Found bluetooth device:  " ESP_BD_ADDR_STR " ", ESP_BD_ADDR_HEX(bluetooth_address));
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Failed to find bluetooth device");
+    }
 
     xSteerQueue = xQueueCreate(10, sizeof(Direction));
     if (xSteerQueue == NULL)
