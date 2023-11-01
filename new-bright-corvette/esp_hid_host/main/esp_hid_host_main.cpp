@@ -21,10 +21,12 @@
 #include "led_indicator.h"
 #include "led_indicator_blink_default.h"
 #include "iot_button.h"
+#include "NonVolatileStorage.h"
 
 static const char *TAG = "ESP_HIDH_DEMO";
 static QueueHandle_t xSteerQueue = NULL;
 static QueueHandle_t xThrustQueue = NULL;
+static NonVolatileStorage prefs;
 
 enum class Direction
 {
@@ -33,20 +35,106 @@ enum class Direction
     STRAIGHT
 };
 
+enum class Bluetooth_states
+{
+    UNPAIRED,
+    PAIRED,
+    DISCONNECTED,
+    CONNECTED,
+    CONNECTING
+};
+
+#ifndef STRINGIFY
+#define STRINGIFY(str) #str
+#endif
+
+#ifndef XSTRINGIFY
+#define XSTRINGIFY(str) STRINGIFY(str)
+#endif
+
+/**
+ * @brief
+ *
+ * @param pvParameters
+ * @todo add a timer that gets reset continuously by the "connected" state. If the timer expires, i.e. no connection for more than
+ * one minute, then notify the user.
+ */
 void hid_demo_task(void *pvParameters)
 {
-    // scan_hid_device(bluetooth_address, 10, NULL);
-    const esp_bd_addr_t bluetooth_address = {0x98, 0xb6, 0xe9, 0x54, 0x85, 0x38};
-    NintendoSwitchController controller(bluetooth_address);
+    const int COD_MAJOR = 0x05; // Peripheral
+    const int COD_MINOR = 0x02; // Gamepad
+    esp_bd_addr_t bluetooth_address;
+    Bluetooth_states bluetooth_state = Bluetooth_states::UNPAIRED;
+    NintendoSwitchController controller;
 
-    controller.connect();
+    // Bluetooth driver requires NVS to connect to previously paired devices, initialize it before Bluetooth
+    // Execute "esptool.py --port /dev/ttyUSB1 erase_flash" to erase the flash
+    if (prefs.init() == ESP_OK)
+    {
+        if (prefs.getBDA(&bluetooth_address))
+        {
+            ESP_LOGI(TAG, "Found bluetooth address in NVS:" ESP_BD_ADDR_STR " ", ESP_BD_ADDR_HEX(bluetooth_address));
+            controller.setBda(bluetooth_address);
+            // controller.setBda((uint8_t *)"\x98\xb6\xe9\x54\x85\x38");
+            bluetooth_state = Bluetooth_states::PAIRED;
+        }
+        else
+        {
+            ESP_LOGI(TAG, "No bluetooth address found in NVS");
+            bluetooth_state = Bluetooth_states::UNPAIRED;
+        }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Failed to initialize NVS");
+    }
+
+    hid_init();
 
     uni_gamepad_t gamepad;
+    while (bluetooth_state == Bluetooth_states::UNPAIRED)
+    {
+        ESP_LOGI(TAG, "Waiting for pairing");
+        if (scan_hid_device(COD_MAJOR, COD_MINOR, 10, &bluetooth_address))
+        {
+            ESP_LOGI(TAG, "Found bluetooth device:  " ESP_BD_ADDR_STR " ", ESP_BD_ADDR_HEX(bluetooth_address));
+            prefs.setBDA(&bluetooth_address);
+            controller.setBda(bluetooth_address);
+            bluetooth_state = Bluetooth_states::PAIRED;
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Failed to find bluetooth device");
+        }
+    }
+    controller.connect();            // Reconnection will be attempted automatically by the driver.  Don't put this inside the loop.
+    bluetooth_state = Bluetooth_states::CONNECTING;
     for (;;)
     {
-        if (controller.isUpdateAvailable(&gamepad))
+        switch (bluetooth_state)
         {
-            ESP_LOGI(TAG, "Button state: %d", gamepad.dpad);
+        case Bluetooth_states::CONNECTING:
+            vTaskDelay(pdMS_TO_TICKS(100));
+            if (controller.isConnected())
+            {
+                ESP_LOGI(TAG, "Connected");
+                bluetooth_state = Bluetooth_states::CONNECTED;
+            }
+            break;
+        case Bluetooth_states::CONNECTED:
+            if (controller.isUpdateAvailable(&gamepad))
+            {
+                ESP_LOGI(TAG, "Button state: %d", gamepad.dpad);
+            }
+            if (!controller.isConnected())
+            {
+                bluetooth_state = Bluetooth_states::CONNECTING;
+                ESP_LOGI(TAG, "Disconnected");
+            }
+            break;
+        default:
+            vTaskDelay(pdMS_TO_TICKS(100));
+            break;
         }
     }
     vTaskDelete(NULL);
@@ -191,28 +279,16 @@ static void button_single_click_cb(void *arg, void *usr_data)
 
 extern "C" void app_main(void)
 {
-    esp_err_t ret;
-    const int COD_MAJOR = 0x05; // Peripheral
-    const int COD_MINOR = 0x02; // Gamepad
+    ESP_LOGI(TAG, "Version : %s", VERSION);
 
-    // Bluetooth requires NVS to connect to previously paired devices, initialize it before Bluetooth
-    ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    // todo
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
     {
         ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
+        err = nvs_flash_init();
     }
-    ESP_ERROR_CHECK(ret);
-    hid_init();
-    esp_bd_addr_t bluetooth_address;
-    if(scan_hid_device(COD_MAJOR, COD_MINOR, 10, &bluetooth_address))
-    {
-        ESP_LOGI(TAG, "Found bluetooth device:  " ESP_BD_ADDR_STR " ", ESP_BD_ADDR_HEX(bluetooth_address));
-    }
-    else
-    {
-        ESP_LOGE(TAG, "Failed to find bluetooth device");
-    }
+    ESP_ERROR_CHECK(err);
 
     xSteerQueue = xQueueCreate(10, sizeof(Direction));
     if (xSteerQueue == NULL)
@@ -226,9 +302,9 @@ extern "C" void app_main(void)
         ESP_LOGE(TAG, "Failed to create queue");
     }
 
-    // xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, &xTask1);
-    xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
-    xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
+    xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, nullptr);
+    // xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
+    // xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
 
     led_indicator_gpio_config_t led_indicator_gpio_config = {
         .is_active_level_high = true,
@@ -281,10 +357,6 @@ extern "C" void app_main(void)
         //         ESP_LOGE(TAG, "Failed to send to queue");
         //     }
         // }
-        ESP_ERROR_CHECK(gpio_set_level(PIN_LED, 1));
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        ESP_ERROR_CHECK(gpio_set_level(PIN_LED, 0));
-        vTaskDelay(pdMS_TO_TICKS(1000));
         // if (xSteerQueue != NULL)
         // {
         //     direction = Direction::STRAIGHT;
@@ -311,7 +383,7 @@ extern "C" void app_main(void)
         //         ESP_LOGE(TAG, "Failed to send to queue");
         //     }
         // }
-        // vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(100));
 
         // bdc_motor_brake() causes both outputs to be high.
         //  bdc_motor_coast() causes both outputs to be low.  equivalent to setting motor speed to 0.

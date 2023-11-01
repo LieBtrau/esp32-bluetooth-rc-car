@@ -1,4 +1,5 @@
-set(srcs "esp_hid_host_main.cpp"
+set(srcs "esp_hid_host_main.cpp" 
+        "NonVolatileStorage.cpp"
         )
 set(include_dirs "include")
 
@@ -7,6 +8,9 @@ idf_component_register(SRCS "${srcs}"
                        REQUIRES bluepad32 driver esp_hid esp_hid_gap 
                        PRIV_REQUIRES nvs_flash)
 
-# https://github.com/TobleMiner/oled-nametag-firmware/blob/main/main/CMakeLists.txt
-# execute_process(COMMAND git describe --always --dirty OUTPUT_VARIABLE badge_app_version)
-# add_compile_definitions(BADGE_APP_VERSION=${badge_app_version})
+# https://stackoverflow.com/questions/58333319/cmakelists-add-definition-add-double-quotes-around-variable
+execute_process(COMMAND git describe --always --dirty OUTPUT_VARIABLE GIT_VERSION)
+string(REGEX REPLACE "\n$" "" GIT_VERSION "${GIT_VERSION}")
+add_compile_definitions(VERSION="${GIT_VERSION}")
+
+

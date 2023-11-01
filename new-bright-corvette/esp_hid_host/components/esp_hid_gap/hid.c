@@ -23,9 +23,19 @@ void hidh_callback(void *handler_args, esp_event_base_t base, int32_t id, void *
     esp_hidh_event_t event = (esp_hidh_event_t)id;
     esp_hidh_event_data_t *param = (esp_hidh_event_data_t *)event_data;
 
+    if(!callback_table_size)
+    {
+        ESP_LOGE(TAG, "No callbacks registered!");
+        return;
+    }
+    const uint8_t *bda = esp_hidh_dev_bda_get(param->open.dev);
+    if(bda==NULL){
+        ESP_LOGE(TAG, "bda is NULL, %d", event);
+        return;
+    }
     for (int i = 0; i < callback_table_size; i++)
     {
-        if (memcmp(callback_table[i].bda, esp_hidh_dev_bda_get(param->open.dev), sizeof(esp_bd_addr_t)) == 0)
+        if (memcmp(callback_table[i].bda, bda, sizeof(esp_bd_addr_t)) == 0)
         {
             callback_table[i].callback(event, param);
         }

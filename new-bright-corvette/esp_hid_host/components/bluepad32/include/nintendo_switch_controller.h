@@ -37,15 +37,17 @@ enum switch_proto_reqs {
 class NintendoSwitchController
 {
 public:
-    NintendoSwitchController(const esp_bd_addr_t address);
+    NintendoSwitchController();
+    void setBda(const esp_bd_addr_t address);
     void connect();
     void disconnect();
     bool hasAddress(const uint8_t *address);
     void setConnected(bool isConnected) { is_connected = isConnected; }
     void parse_input_buttons(uint8_t *data, size_t len);
     bool isUpdateAvailable(uni_gamepad_t *gamepad);
+    bool isConnected();
 private:
-    esp_bd_addr_t bda;
+    esp_bd_addr_t _bda;
     esp_hid_transport_t transport;
     bool is_connected;
     uni_gamepad_t last_gamepad;

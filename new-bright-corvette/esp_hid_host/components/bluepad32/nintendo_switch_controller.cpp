@@ -25,15 +25,19 @@ struct switch_report_3f_s
 
 static void nintendo_switch_controller_callback(esp_hidh_event_t event, esp_hidh_event_data_t *param);
 
-NintendoSwitchController::NintendoSwitchController(const esp_bd_addr_t address) : transport(ESP_HID_TRANSPORT_BT), is_connected(false)
+NintendoSwitchController::NintendoSwitchController() : transport(ESP_HID_TRANSPORT_BT), is_connected(false)
 {
-    memcpy(bda, address, sizeof(esp_bd_addr_t));
-    add_callback(bda, nintendo_switch_controller_callback);
     buttonStateQueue = xQueueCreate(10, sizeof(uni_gamepad_t));
     if (buttonStateQueue == NULL)
     {
         ESP_LOGE(TAG, "Failed to create buttonStateQueue");
     }
+}
+
+void NintendoSwitchController::setBda(const esp_bd_addr_t address)
+{
+    memcpy(_bda, address, sizeof(esp_bd_addr_t));
+    add_callback(_bda, nintendo_switch_controller_callback);
 
     // Add the controller to the table
     NintendoSwitchController **newTable = (NintendoSwitchController **)realloc(controllerTable, sizeof(NintendoSwitchController *) * (controllerTableSize + 1));
@@ -50,12 +54,12 @@ NintendoSwitchController::NintendoSwitchController(const esp_bd_addr_t address) 
 void NintendoSwitchController::connect()
 {
     ESP_LOGI(TAG, "Connecting to controller");
-    hid_connect(bda, transport, BLE_ADDR_TYPE_PUBLIC);
+    hid_connect(_bda, transport, BLE_ADDR_TYPE_PUBLIC);
 }
 
 bool NintendoSwitchController::hasAddress(const uint8_t *address)
 {
-    return memcmp(bda, address, sizeof(esp_bd_addr_t)) == 0;
+    return memcmp(_bda, address, sizeof(esp_bd_addr_t)) == 0;
 }
 
 /**
@@ -230,4 +234,9 @@ void nintendo_switch_controller_callback(esp_hidh_event_t event, esp_hidh_event_
         ESP_LOGI(TAG, "EVENT: %d", event);
         break;
     }
+}
+
+bool NintendoSwitchController::isConnected()
+{
+    return is_connected;
 }
