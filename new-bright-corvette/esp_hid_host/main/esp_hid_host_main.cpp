@@ -18,16 +18,16 @@
 #include "bdc_motor.h"
 #include "pins.h"
 #include "driver/gpio.h"
-#include "led_indicator.h"
-#include "led_indicator_blink_default.h"
 #include "iot_button.h"
 #include "NonVolatileStorage.h"
+#include "LED.h"
 
 static const char *TAG = "ESP_HIDH_DEMO";
 static QueueHandle_t xSteerQueue = NULL;
 static QueueHandle_t xThrustQueue = NULL;
 static QueueHandle_t xBluetoothQueue = NULL;
 static NonVolatileStorage prefs;
+static NintendoSwitchController controller;
 
 enum class Direction
 {
@@ -44,14 +44,6 @@ enum class Bluetooth_states
     CONNECTING
 };
 
-#ifndef STRINGIFY
-#define STRINGIFY(str) #str
-#endif
-
-#ifndef XSTRINGIFY
-#define XSTRINGIFY(str) STRINGIFY(str)
-#endif
-
 /**
  * @brief
  *
@@ -65,7 +57,6 @@ void hid_demo_task(void *pvParameters)
     const int COD_MINOR = 0x02; // Gamepad
     esp_bd_addr_t bluetooth_address;
     Bluetooth_states bluetooth_state = Bluetooth_states::UNPAIRED;
-    NintendoSwitchController controller;
 
     // Bluetooth driver requires NVS to connect to previously paired devices, initialize it before Bluetooth
     // Execute "esptool.py --port /dev/ttyUSB1 erase_flash" to erase the flash
@@ -311,20 +302,6 @@ extern "C" void app_main(void)
     xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
     xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
 
-    led_indicator_gpio_config_t led_indicator_gpio_config = {
-        .is_active_level_high = true,
-        .gpio_num = GPIO_NUM_26, /**< num of GPIO */
-    };
-
-    led_indicator_config_t config = {
-        .mode = LED_GPIO_MODE,
-        .led_indicator_gpio_config = &led_indicator_gpio_config,
-        .blink_lists = default_led_indicator_blink_lists,
-        .blink_list_num = (uint16_t)DEFAULT_BLINK_LIST_NUM,
-    };
-    led_indicator_handle_t led_handle = led_indicator_create(&config);
-    led_indicator_start(led_handle, BLINK_FACTORY_RESET);
-
     button_config_t gpio_btn_cfg = {
         .type = BUTTON_TYPE_GPIO,
         .long_press_time = CONFIG_BUTTON_LONG_PRESS_TIME_MS,
@@ -350,6 +327,12 @@ extern "C" void app_main(void)
     cfg_single_press_up.event_data.long_press.press_time = 2000;
     iot_button_register_event_cb(gpio_btn, cfg_single_press_up, button_single_click_cb, NULL);
 
+    LED led;
+    led.init(PIN_LED);
+
+    bool connected=false;
+    led.blink();
+
     for (;;)
     {
         uni_gamepad_t gamepad;
@@ -373,6 +356,16 @@ extern "C" void app_main(void)
                         ESP_LOGE(TAG, "Failed to send to xSteerQueue");
                     }
                 }
+            }
+            if (controller.isConnected() && !connected)
+            {
+                led.on();
+                connected=true;
+            }
+            else if (!controller.isConnected() && connected)
+            {
+                led.blink();
+                connected=false;
             }
         }
         else
