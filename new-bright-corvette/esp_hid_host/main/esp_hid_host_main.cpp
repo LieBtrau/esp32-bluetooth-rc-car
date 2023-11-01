@@ -246,7 +246,7 @@ void steering_motor_task(void *pvParameters)
                 case Direction::RIGHT:
                     ESP_LOGI(TAG, "Steer right");
                     ESP_ERROR_CHECK(bdc_motor_reverse(steering_motor));
-                    pwm_duty = BDC_MCPWM_DUTY_TICK_MIN_HOLD;
+                    pwm_duty = BDC_MCPWM_DUTY_TICK_MAX;
                     break;
                 case Direction::STRAIGHT:
                     ESP_LOGI(TAG, "Steer straight");
@@ -308,7 +308,7 @@ extern "C" void app_main(void)
     }
 
     xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, nullptr);
-    // xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
+    xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
     xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
 
     led_indicator_gpio_config_t led_indicator_gpio_config = {
@@ -362,44 +362,24 @@ extern "C" void app_main(void)
                 {
                     if (xQueueSend(xThrustQueue, &gamepad.axis_y, (TickType_t)1) != pdPASS)
                     {
-                        ESP_LOGE(TAG, "Failed to send to queue");
+                        ESP_LOGE(TAG, "Failed to send to xThrustQueue");
+                    }
+                }
+                if (xSteerQueue != NULL)
+                {
+                    Direction direction = gamepad.axis_rx < 0 ? Direction::LEFT : (gamepad.axis_rx > 0 ? Direction::RIGHT : Direction::STRAIGHT);
+                    if (xQueueSend(xSteerQueue, &direction, (TickType_t)1) != pdPASS)
+                    {
+                        ESP_LOGE(TAG, "Failed to send to xSteerQueue");
                     }
                 }
             }
         }
-
-        // Direction direction;
-
-        // if (xSteerQueue != NULL)
-        // {
-        //     direction = Direction::LEFT;
-        //     if (xQueueSend(xSteerQueue, &direction, (TickType_t)1) != pdPASS)
-        //     {
-        //         ESP_LOGE(TAG, "Failed to send to queue");
-        //     }
-        // }
-        // if (xSteerQueue != NULL)
-        // {
-        //     direction = Direction::STRAIGHT;
-        //     if (xQueueSend(xSteerQueue, &direction, (TickType_t)1) != pdPASS)
-        //     {
-        //         ESP_LOGE(TAG, "Failed to send to queue");
-        //     }
-        // }
-
-        // vTaskDelay(pdMS_TO_TICKS(5000));
-        // if(xThrustQueue != NULL)
-        // {
-        //     int thrust = -100;
-        //     if (xQueueSend(xThrustQueue, &thrust, (TickType_t)1) != pdPASS)
-        //     {
-        //         ESP_LOGE(TAG, "Failed to send to queue");
-        //     }
-        // }
-
-        // bdc_motor_brake() causes both outputs to be high.
-        //  bdc_motor_coast() causes both outputs to be low.  equivalent to setting motor speed to 0.
-        //       ESP_ERROR_CHECK(bdc_motor_forward(motor2));
+        else
+        {
+            ESP_LOGE(TAG, "xBluetoothQueue is NULL");
+            vTaskDelay(pdMS_TO_TICKS(5000));
+        }
     }
 
     vTaskDelay(portMAX_DELAY);
