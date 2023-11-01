@@ -26,6 +26,7 @@
 static const char *TAG = "ESP_HIDH_DEMO";
 static QueueHandle_t xSteerQueue = NULL;
 static QueueHandle_t xThrustQueue = NULL;
+static QueueHandle_t xBluetoothQueue = NULL;
 static NonVolatileStorage prefs;
 
 enum class Direction
@@ -39,7 +40,6 @@ enum class Bluetooth_states
 {
     UNPAIRED,
     PAIRED,
-    DISCONNECTED,
     CONNECTED,
     CONNECTING
 };
@@ -107,7 +107,7 @@ void hid_demo_task(void *pvParameters)
             ESP_LOGE(TAG, "Failed to find bluetooth device");
         }
     }
-    controller.connect();            // Reconnection will be attempted automatically by the driver.  Don't put this inside the loop.
+    controller.connect(); // Reconnection will be attempted automatically by the driver.  Don't put this inside the loop.
     bluetooth_state = Bluetooth_states::CONNECTING;
     for (;;)
     {
@@ -124,7 +124,13 @@ void hid_demo_task(void *pvParameters)
         case Bluetooth_states::CONNECTED:
             if (controller.isUpdateAvailable(&gamepad))
             {
-                ESP_LOGI(TAG, "Button state: %d", gamepad.dpad);
+                if (xBluetoothQueue != NULL)
+                {
+                    if (xQueueSend(xBluetoothQueue, &gamepad, (TickType_t)1) != pdPASS)
+                    {
+                        ESP_LOGE(TAG, "Failed to send to queue");
+                    }
+                }
             }
             if (!controller.isConnected())
             {
@@ -142,10 +148,11 @@ void hid_demo_task(void *pvParameters)
 
 void thrust_motor_task(void *pvParameters)
 {
+    const int32_t BDC_MAX_THRUST = 512;
     const uint32_t BDC_MCPWM_TIMER_RESOLUTION_HZ = 10e6;                                        // 10MHz
     const uint32_t BDC_MCPWM_FREQ_HZ = 20000;                                                   // PWM frequency
     const uint32_t BDC_MCPWM_DUTY_TICK_MAX = BDC_MCPWM_TIMER_RESOLUTION_HZ / BDC_MCPWM_FREQ_HZ; // maximum value we can set for the duty cycle, in ticks
-    const uint32_t BDC_MCPWM_DUTY_TICK_MIN = 50 * BDC_MCPWM_DUTY_TICK_MAX / 100;                // minimum PWM value needed for the motor to spin
+    const uint32_t BDC_MCPWM_DUTY_TICK_MIN = BDC_MCPWM_DUTY_TICK_MAX / 2;                       // minimum PWM value needed for the motor to spin
     ESP_LOGI(TAG, "Create DC motors");
     bdc_motor_config_t motor1_config = {
         .pwma_gpio_num = PIN_THRUST_MOTOR_A,
@@ -169,37 +176,29 @@ void thrust_motor_task(void *pvParameters)
         {
             if (xQueueReceive(xThrustQueue, &sollThrust, (TickType_t)1) == pdPASS)
             {
-                sollThrust = sollThrust > 100 ? 100 : (sollThrust < -100 ? -100 : sollThrust);
+                sollThrust = sollThrust > BDC_MAX_THRUST ? BDC_MAX_THRUST : (sollThrust < -BDC_MAX_THRUST ? -BDC_MAX_THRUST : sollThrust);
                 ESP_LOGI(TAG, "SollThrust: %d", sollThrust);
-            }
-        }
-        // Set thrust
-        if (sollThrust > currentThrust)
-        {
-            currentThrust++;
-        }
-        else if (sollThrust < currentThrust)
-        {
-            currentThrust--;
-        }
-        // It's no use setting PWM-values below the minimum value needed for the motor to spin.
-        ESP_ERROR_CHECK(bdc_motor_set_speed(thrust_motor, BDC_MCPWM_DUTY_TICK_MIN +
-                                                              (currentThrust < 0 ? -currentThrust : currentThrust) * (BDC_MCPWM_DUTY_TICK_MAX - BDC_MCPWM_DUTY_TICK_MIN) / 100));
 
-        // Set motor direction
-        if (currentThrust == 0)
-        {
-            if (sollThrust > 0)
-            {
-                ESP_ERROR_CHECK(bdc_motor_forward(thrust_motor));
-            }
-            else if (sollThrust < 0)
-            {
-                ESP_ERROR_CHECK(bdc_motor_reverse(thrust_motor));
-            }
-            else
-            {
-                ESP_ERROR_CHECK(bdc_motor_coast(thrust_motor));
+                // Might implement some
+                currentThrust = sollThrust;
+
+                // It's no use setting PWM-values below the minimum value needed for the motor to spin.
+                ESP_ERROR_CHECK(bdc_motor_set_speed(thrust_motor, BDC_MCPWM_DUTY_TICK_MIN +
+                                                                      (currentThrust < 0 ? -currentThrust : currentThrust) * (BDC_MCPWM_DUTY_TICK_MAX - BDC_MCPWM_DUTY_TICK_MIN) / BDC_MAX_THRUST));
+
+                if (sollThrust > 0)
+                {
+                    ESP_ERROR_CHECK(bdc_motor_forward(thrust_motor));
+                }
+                else if (sollThrust < 0)
+                {
+                    ESP_ERROR_CHECK(bdc_motor_reverse(thrust_motor));
+                }
+                else
+                {
+                    ESP_ERROR_CHECK(bdc_motor_coast(thrust_motor));
+                }
+                ESP_LOGI(TAG, "Current thrust: %d", currentThrust);
             }
         }
         vTaskDelay(pdMS_TO_TICKS(10));
@@ -302,9 +301,15 @@ extern "C" void app_main(void)
         ESP_LOGE(TAG, "Failed to create queue");
     }
 
+    xBluetoothQueue = xQueueCreate(10, sizeof(uni_gamepad_t));
+    if (xBluetoothQueue == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to create queue");
+    }
+
     xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, nullptr);
     // xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
-    // xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
+    xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
 
     led_indicator_gpio_config_t led_indicator_gpio_config = {
         .is_active_level_high = true,
@@ -347,6 +352,22 @@ extern "C" void app_main(void)
 
     for (;;)
     {
+        uni_gamepad_t gamepad;
+        if (xBluetoothQueue != NULL)
+        {
+            if (xQueueReceive(xBluetoothQueue, &gamepad, (TickType_t)1) == pdPASS)
+            {
+                ESP_LOGI(TAG, "Button state: %d, Axis x: %ld, Axis y: %ld, Axis rx: %ld, Axis ry: %ld", gamepad.dpad, gamepad.axis_x, gamepad.axis_y, gamepad.axis_rx, gamepad.axis_ry);
+                if (xThrustQueue != NULL)
+                {
+                    if (xQueueSend(xThrustQueue, &gamepad.axis_y, (TickType_t)1) != pdPASS)
+                    {
+                        ESP_LOGE(TAG, "Failed to send to queue");
+                    }
+                }
+            }
+        }
+
         // Direction direction;
 
         // if (xSteerQueue != NULL)
@@ -366,14 +387,6 @@ extern "C" void app_main(void)
         //     }
         // }
 
-        // if(xThrustQueue != NULL)
-        // {
-        //     int thrust = 100;
-        //     if (xQueueSend(xThrustQueue, &thrust, (TickType_t)1) != pdPASS)
-        //     {
-        //         ESP_LOGE(TAG, "Failed to send to queue");
-        //     }
-        // }
         // vTaskDelay(pdMS_TO_TICKS(5000));
         // if(xThrustQueue != NULL)
         // {
@@ -383,7 +396,6 @@ extern "C" void app_main(void)
         //         ESP_LOGE(TAG, "Failed to send to queue");
         //     }
         // }
-        vTaskDelay(pdMS_TO_TICKS(100));
 
         // bdc_motor_brake() causes both outputs to be high.
         //  bdc_motor_coast() causes both outputs to be low.  equivalent to setting motor speed to 0.
