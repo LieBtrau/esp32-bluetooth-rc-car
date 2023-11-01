@@ -1,6 +1,7 @@
 set(srcs "esp_hid_host_main.cpp" 
         "NonVolatileStorage.cpp"
         "LED.cpp"
+        "Motors.cpp"
         )
 set(include_dirs "include")
 
