@@ -1,6 +1,7 @@
 #pragma once
 
-#include "nintendo_switch_controller.h" // wrong header, but it works....
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 
 enum class Direction
 {
