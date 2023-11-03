@@ -1,14 +1,16 @@
 #include "Button.h"
-#include "iot_button.h"
 #include "esp_log.h"
+#include "iot_button.h"
 
 static const char *TAG = "Button";
 
 static void button_long_press_cb(void *arg, void *usr_data);
 static void button_single_click_cb(void *arg, void *usr_data);
+static EventGroupHandle_t buttonEvents = NULL;
 
-void initButton(uint32_t pinButton)
+void initButton(uint32_t pinButton, EventGroupHandle_t events)
 {
+    buttonEvents = events;
     button_config_t gpio_btn_cfg = {
         .type = BUTTON_TYPE_GPIO,
         .long_press_time = CONFIG_BUTTON_LONG_PRESS_TIME_MS,
@@ -36,12 +38,13 @@ void initButton(uint32_t pinButton)
 
 }
 
-void button_long_press_cb(void *arg, void *usr_data)
-{
-    ESP_LOGI(TAG, "BUTTON_LONG_PRESS_UP");
-}
-
 void button_single_click_cb(void *arg, void *usr_data)
 {
-    ESP_LOGI(TAG, "BUTTON_SINGLE_CLICK");
+    xEventGroupSetBits(buttonEvents, 0x1);
 }
+
+void button_long_press_cb(void *arg, void *usr_data)
+{
+    xEventGroupSetBits(buttonEvents, 0x2);
+}
+

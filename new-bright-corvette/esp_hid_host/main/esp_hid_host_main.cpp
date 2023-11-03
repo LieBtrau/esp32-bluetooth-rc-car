@@ -28,13 +28,23 @@ extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "Version : %s", VERSION);
 
+    EventGroupHandle_t xButtonEventGroup;
+    xButtonEventGroup = xEventGroupCreate();
+    if( xButtonEventGroup == NULL )
+    {
+        /* The event group was not created because there was insufficient
+        FreeRTOS heap available. */
+        return;
+    }
+
     SteerMotor steerMotor;
     steerMotor.init(PIN_STEERING_MOTOR_A, PIN_STEERING_MOTOR_B);
     ThrustMotor thrustMotor;
     thrustMotor.init(PIN_THRUST_MOTOR_A, PIN_THRUST_MOTOR_B);
     BluetoothController btcontroller;
     btcontroller.init();
-    initButton(PIN_SWITCH);
+    initButton(PIN_SWITCH, xButtonEventGroup);
+
 
     LED led;
     led.init(PIN_LED);
@@ -62,6 +72,14 @@ extern "C" void app_main(void)
         default:
             break;
         }
-        vTaskDelay(pdMS_TO_TICKS(10));
+        EventBits_t uxBits = xEventGroupWaitBits(xButtonEventGroup, 0x3, pdTRUE, pdFALSE, pdMS_TO_TICKS(10));
+        if ((uxBits & 0x1) != 0)
+        {
+            ESP_LOGI(TAG, "Button short pressed");
+        }
+        if ((uxBits & 0x2) != 0)
+        {
+            ESP_LOGI(TAG, "Button long pressed");
+        }
     }
 }

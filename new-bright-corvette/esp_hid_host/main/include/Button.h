@@ -1,12 +1,15 @@
 #pragma once
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
 
-void initButton(uint32_t pinButton);
+
+void initButton(uint32_t pinButton, EventGroupHandle_t buttonEvents);
 
 #ifdef __cplusplus
 }
