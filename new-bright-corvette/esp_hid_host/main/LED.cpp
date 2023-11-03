@@ -19,14 +19,30 @@ void LED::init(int32_t pin)
 
 void LED::on()
 {
-    led_indicator_stop(_led_handle, _blink_type);
-    led_indicator_start(_led_handle, BLINK_CONNECTED);
-    _blink_type = BLINK_CONNECTED;
+    if(_blink_type != BLINK_CONNECTED)
+    {
+        led_indicator_stop(_led_handle, _blink_type);
+        led_indicator_start(_led_handle, BLINK_CONNECTED);
+        _blink_type = BLINK_CONNECTED;
+    }
 }
 
-void LED::blink()
+void LED::blinkSlow()
 {
-    led_indicator_stop(_led_handle, _blink_type);
-    led_indicator_start(_led_handle, BLINK_CONNECTING);
-    _blink_type = BLINK_CONNECTING;
+    if(_blink_type != BLINK_CONNECTING)
+    {
+        led_indicator_stop(_led_handle, _blink_type);
+        led_indicator_start(_led_handle, BLINK_CONNECTING);
+        _blink_type = BLINK_CONNECTING;
+    }
+}
+
+void LED::blinkFast()
+{
+    if(_blink_type != BLINK_FACTORY_RESET)
+    {
+        led_indicator_stop(_led_handle, _blink_type);
+        led_indicator_start(_led_handle, BLINK_FACTORY_RESET);
+        _blink_type = BLINK_FACTORY_RESET;
+    }
 }

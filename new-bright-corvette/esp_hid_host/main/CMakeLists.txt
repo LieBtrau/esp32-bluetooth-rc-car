@@ -1,4 +1,6 @@
-set(srcs "esp_hid_host_main.cpp" 
+set(srcs
+        "BluetoothController.cpp"
+        "esp_hid_host_main.cpp" 
         "NonVolatileStorage.cpp"
         "LED.cpp"
         "SteerMotor.cpp"

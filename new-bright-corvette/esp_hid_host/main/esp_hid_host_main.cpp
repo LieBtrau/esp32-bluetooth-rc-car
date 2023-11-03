@@ -12,122 +12,16 @@
  */
 
 #include "freertos/FreeRTOS.h"
-#include "nvs_flash.h"
-#include "nintendo_switch_controller.h"
-#include "hid.h"
+#include "esp_log.h"
 #include "pins.h"
 #include "driver/gpio.h"
 #include "iot_button.h"
-#include "NonVolatileStorage.h"
 #include "LED.h"
 #include "SteerMotor.h"
 #include "ThrustMotor.h"
+#include "BluetoothController.h"
 
 static const char *TAG = "ESP_HIDH_DEMO";
-static QueueHandle_t xBluetoothQueue = NULL;
-static NonVolatileStorage prefs;
-static NintendoSwitchController controller;
-
-enum class Bluetooth_states
-{
-    UNPAIRED,
-    PAIRED,
-    CONNECTED,
-    CONNECTING
-};
-
-/**
- * @brief
- *
- * @param pvParameters
- * @todo add a timer that gets reset continuously by the "connected" state. If the timer expires, i.e. no connection for more than
- * one minute, then notify the user.
- */
-void hid_demo_task(void *pvParameters)
-{
-    const int COD_MAJOR = 0x05; // Peripheral
-    const int COD_MINOR = 0x02; // Gamepad
-    esp_bd_addr_t bluetooth_address;
-    Bluetooth_states bluetooth_state = Bluetooth_states::UNPAIRED;
-
-    // Bluetooth driver requires NVS to connect to previously paired devices, initialize it before Bluetooth
-    // Execute "esptool.py --port /dev/ttyUSB1 erase_flash" to erase the flash
-    if (prefs.init() == ESP_OK)
-    {
-        if (prefs.getBDA(&bluetooth_address))
-        {
-            ESP_LOGI(TAG, "Found bluetooth address in NVS:" ESP_BD_ADDR_STR " ", ESP_BD_ADDR_HEX(bluetooth_address));
-            controller.setBda(bluetooth_address);
-            // controller.setBda((uint8_t *)"\x98\xb6\xe9\x54\x85\x38");
-            bluetooth_state = Bluetooth_states::PAIRED;
-        }
-        else
-        {
-            ESP_LOGI(TAG, "No bluetooth address found in NVS");
-            bluetooth_state = Bluetooth_states::UNPAIRED;
-        }
-    }
-    else
-    {
-        ESP_LOGE(TAG, "Failed to initialize NVS");
-    }
-
-    hid_init();
-
-    uni_gamepad_t gamepad;
-    while (bluetooth_state == Bluetooth_states::UNPAIRED)
-    {
-        ESP_LOGI(TAG, "Waiting for pairing");
-        if (scan_hid_device(COD_MAJOR, COD_MINOR, 10, &bluetooth_address))
-        {
-            ESP_LOGI(TAG, "Found bluetooth device:  " ESP_BD_ADDR_STR " ", ESP_BD_ADDR_HEX(bluetooth_address));
-            prefs.setBDA(&bluetooth_address);
-            controller.setBda(bluetooth_address);
-            bluetooth_state = Bluetooth_states::PAIRED;
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to find bluetooth device");
-        }
-    }
-    controller.connect(); // Reconnection will be attempted automatically by the driver.  Don't put this inside the loop.
-    bluetooth_state = Bluetooth_states::CONNECTING;
-    for (;;)
-    {
-        switch (bluetooth_state)
-        {
-        case Bluetooth_states::CONNECTING:
-            vTaskDelay(pdMS_TO_TICKS(100));
-            if (controller.isConnected())
-            {
-                ESP_LOGI(TAG, "Connected");
-                bluetooth_state = Bluetooth_states::CONNECTED;
-            }
-            break;
-        case Bluetooth_states::CONNECTED:
-            if (controller.isUpdateAvailable(&gamepad))
-            {
-                if (xBluetoothQueue != NULL)
-                {
-                    if (xQueueSend(xBluetoothQueue, &gamepad, (TickType_t)1) != pdPASS)
-                    {
-                        ESP_LOGE(TAG, "Failed to send to queue");
-                    }
-                }
-            }
-            if (!controller.isConnected())
-            {
-                bluetooth_state = Bluetooth_states::CONNECTING;
-                ESP_LOGI(TAG, "Disconnected");
-            }
-            break;
-        default:
-            vTaskDelay(pdMS_TO_TICKS(100));
-            break;
-        }
-    }
-    vTaskDelete(NULL);
-}
 
 static void button_long_press_cb(void *arg, void *usr_data)
 {
@@ -143,27 +37,12 @@ extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "Version : %s", VERSION);
 
-    // todo
-    esp_err_t err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(err);
-
     SteerMotor steerMotor;
     steerMotor.init(PIN_STEERING_MOTOR_A, PIN_STEERING_MOTOR_B);
     ThrustMotor thrustMotor;
     thrustMotor.init(PIN_THRUST_MOTOR_A, PIN_THRUST_MOTOR_B);
-
-    xBluetoothQueue = xQueueCreate(10, sizeof(uni_gamepad_t));
-    if (xBluetoothQueue == NULL)
-    {
-        ESP_LOGE(TAG, "Failed to create queue");
-    }
-
-    xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, nullptr);
+    BluetoothController btcontroller;
+    btcontroller.init();
 
     button_config_t gpio_btn_cfg = {
         .type = BUTTON_TYPE_GPIO,
@@ -192,39 +71,30 @@ extern "C" void app_main(void)
 
     LED led;
     led.init(PIN_LED);
-
-    bool connected = false;
-    led.blink();
-
     for (;;)
     {
-        uni_gamepad_t gamepad;
-        if (xBluetoothQueue != NULL)
+        switch (btcontroller.getState())
         {
-            if (xQueueReceive(xBluetoothQueue, &gamepad, (TickType_t)1) == pdPASS)
+        case Bluetooth_states::UNPAIRED:
+            led.blinkFast();
+            break;
+        case Bluetooth_states::CONNECTING:
+            led.blinkSlow();
+            break;
+        case Bluetooth_states::CONNECTED:
+            led.on();
+            uni_gamepad_t gamepad;
+            if (btcontroller.eventReady(&gamepad))
             {
                 ESP_LOGI(TAG, "Button state: %d, Axis x: %ld, Axis y: %ld, Axis rx: %ld, Axis ry: %ld", gamepad.dpad, gamepad.axis_x, gamepad.axis_y, gamepad.axis_rx, gamepad.axis_ry);
                 thrustMotor.setSpeed(gamepad.axis_y);
                 Direction direction = gamepad.axis_rx < 0 ? Direction::LEFT : (gamepad.axis_rx > 0 ? Direction::RIGHT : Direction::STRAIGHT);
                 steerMotor.setDirection(direction);
             }
-            if (controller.isConnected() && !connected)
-            {
-                led.on();
-                connected = true;
-            }
-            else if (!controller.isConnected() && connected)
-            {
-                led.blink();
-                connected = false;
-            }
+            break;
+        default:
+            break;
         }
-        else
-        {
-            ESP_LOGE(TAG, "xBluetoothQueue is NULL");
-            vTaskDelay(pdMS_TO_TICKS(5000));
-        }
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
-
-    vTaskDelay(portMAX_DELAY);
 }
