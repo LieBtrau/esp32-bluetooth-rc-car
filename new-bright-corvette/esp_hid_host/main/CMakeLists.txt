@@ -1,5 +1,6 @@
 set(srcs
         "BluetoothController.cpp"
+        "Button.c"
         "esp_hid_host_main.cpp" 
         "NonVolatileStorage.cpp"
         "LED.cpp"
