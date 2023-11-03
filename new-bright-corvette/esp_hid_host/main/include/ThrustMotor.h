@@ -1,17 +1,15 @@
 #pragma once
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
 
-enum class Direction
+#include "stdint.h"
+
+class ThrustMotor
 {
-    LEFT,
-    RIGHT,
-    STRAIGHT
+public:
+    bool init(uint32_t pin_A, uint32_t pin_B);
+    bool setSpeed(int speed);
+private:
+    
 };
 
-void initMotors();
-void steering_motor_task(void *pvParameters);
-void thrust_motor_task(void *pvParameters);
-QueueHandle_t getSteerQueue();
-QueueHandle_t getThrustQueue();
+

@@ -20,7 +20,8 @@
 #include "iot_button.h"
 #include "NonVolatileStorage.h"
 #include "LED.h"
-#include "Motors.h"
+#include "SteerMotor.h"
+#include "ThrustMotor.h"
 
 static const char *TAG = "ESP_HIDH_DEMO";
 static QueueHandle_t xBluetoothQueue = NULL;
@@ -151,10 +152,11 @@ extern "C" void app_main(void)
     }
     ESP_ERROR_CHECK(err);
 
-    initMotors();
-    QueueHandle_t xSteerQueue = getSteerQueue();
-    QueueHandle_t xThrustQueue = getThrustQueue();
-    
+    SteerMotor steerMotor;
+    steerMotor.init(PIN_STEERING_MOTOR_A, PIN_STEERING_MOTOR_B);
+    ThrustMotor thrustMotor;
+    thrustMotor.init(PIN_THRUST_MOTOR_A, PIN_THRUST_MOTOR_B);
+
     xBluetoothQueue = xQueueCreate(10, sizeof(uni_gamepad_t));
     if (xBluetoothQueue == NULL)
     {
@@ -162,8 +164,6 @@ extern "C" void app_main(void)
     }
 
     xTaskCreate(&hid_demo_task, "hid_task", 6 * 1024, NULL, 2, nullptr);
-    xTaskCreate(&steering_motor_task, "steering_motor_task", 6 * 1024, NULL, 3, nullptr); // make sure to allocate enough stack space for the task
-    xTaskCreate(&thrust_motor_task, "thrust_motor_task", 6 * 1024, NULL, 3, nullptr);
 
     button_config_t gpio_btn_cfg = {
         .type = BUTTON_TYPE_GPIO,
@@ -193,7 +193,7 @@ extern "C" void app_main(void)
     LED led;
     led.init(PIN_LED);
 
-    bool connected=false;
+    bool connected = false;
     led.blink();
 
     for (;;)
@@ -204,31 +204,19 @@ extern "C" void app_main(void)
             if (xQueueReceive(xBluetoothQueue, &gamepad, (TickType_t)1) == pdPASS)
             {
                 ESP_LOGI(TAG, "Button state: %d, Axis x: %ld, Axis y: %ld, Axis rx: %ld, Axis ry: %ld", gamepad.dpad, gamepad.axis_x, gamepad.axis_y, gamepad.axis_rx, gamepad.axis_ry);
-                if (xThrustQueue != NULL)
-                {
-                    if (xQueueSend(xThrustQueue, &gamepad.axis_y, (TickType_t)1) != pdPASS)
-                    {
-                        ESP_LOGE(TAG, "Failed to send to xThrustQueue");
-                    }
-                }
-                if (xSteerQueue != NULL)
-                {
-                    Direction direction = gamepad.axis_rx < 0 ? Direction::LEFT : (gamepad.axis_rx > 0 ? Direction::RIGHT : Direction::STRAIGHT);
-                    if (xQueueSend(xSteerQueue, &direction, (TickType_t)1) != pdPASS)
-                    {
-                        ESP_LOGE(TAG, "Failed to send to xSteerQueue");
-                    }
-                }
+                thrustMotor.setSpeed(gamepad.axis_y);
+                Direction direction = gamepad.axis_rx < 0 ? Direction::LEFT : (gamepad.axis_rx > 0 ? Direction::RIGHT : Direction::STRAIGHT);
+                steerMotor.setDirection(direction);
             }
             if (controller.isConnected() && !connected)
             {
                 led.on();
-                connected=true;
+                connected = true;
             }
             else if (!controller.isConnected() && connected)
             {
                 led.blink();
-                connected=false;
+                connected = false;
             }
         }
         else
