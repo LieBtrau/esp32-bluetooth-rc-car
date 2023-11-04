@@ -1,5 +1,6 @@
 #pragma once
 #include "led_indicator.h"
+#include "led_indicator_blink_default.h"
 
 class LED
 {
@@ -12,5 +13,5 @@ public:
 
 private:
     led_indicator_handle_t _led_handle = nullptr;
-    int _blink_type = 0;
+    int _blink_type = BLINK_MAX;
 };

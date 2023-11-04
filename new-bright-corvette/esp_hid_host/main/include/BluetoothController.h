@@ -12,8 +12,9 @@ enum class Bluetooth_states
 
 class BluetoothController
 {
-    public:
-        bool init();
-        bool eventReady(uni_gamepad_t *gamepad);
-        Bluetooth_states getState();
+public:
+    bool init();
+    bool eventReady(uni_gamepad_t *gamepad);
+    Bluetooth_states getState();
+    void unpair();
 };

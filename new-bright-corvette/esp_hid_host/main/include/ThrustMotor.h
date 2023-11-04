@@ -8,8 +8,9 @@ class ThrustMotor
 public:
     bool init(uint32_t pin_A, uint32_t pin_B);
     bool setSpeed(int speed);
+    void stop();
 private:
-    
+    int _currentSpeed = 0;
 };
 
 

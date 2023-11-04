@@ -56,12 +56,19 @@ Bluetooth_states BluetoothController::getState()
     return bluetooth_state;
 }
 
+void BluetoothController::unpair()
+{
+    prefs.setBDA((const esp_bd_addr_t *)"\x00\x00\x00\x00\x00\x00");
+    bluetooth_state = Bluetooth_states::UNPAIRED;
+}
+
 void hid_demo_task(void *pvParameters)
 {
     const int COD_MAJOR = 0x05; // Peripheral
     const int COD_MINOR = 0x02; // Gamepad
     esp_bd_addr_t bluetooth_address;
- 
+    bluetooth_state = Bluetooth_states::UNPAIRED;
+
     // Bluetooth driver requires NVS to connect to previously paired devices, initialize it before Bluetooth
     // Execute "esptool.py --port /dev/ttyUSB1 erase_flash" to erase the flash
     if (prefs.init() == ESP_OK)
@@ -76,7 +83,6 @@ void hid_demo_task(void *pvParameters)
         else
         {
             ESP_LOGI(TAG, "No bluetooth address found in NVS");
-            bluetooth_state = Bluetooth_states::UNPAIRED;
         }
     }
     else
@@ -85,29 +91,29 @@ void hid_demo_task(void *pvParameters)
     }
 
     hid_init();
-
     uni_gamepad_t gamepad;
-    while (bluetooth_state == Bluetooth_states::UNPAIRED)
-    {
-        ESP_LOGI(TAG, "Waiting for pairing");
-        if (scan_hid_device(COD_MAJOR, COD_MINOR, 10, &bluetooth_address))
-        {
-            ESP_LOGI(TAG, "Found bluetooth device:  " ESP_BD_ADDR_STR " ", ESP_BD_ADDR_HEX(bluetooth_address));
-            prefs.setBDA(&bluetooth_address);
-            controller.setBda(bluetooth_address);
-            bluetooth_state = Bluetooth_states::PAIRED;
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to find bluetooth device");
-        }
-    }
-    controller.connect(); // Reconnection will be attempted automatically by the driver.  Don't put this inside the loop.
-    bluetooth_state = Bluetooth_states::CONNECTING;
     for (;;)
     {
         switch (bluetooth_state)
         {
+        case Bluetooth_states::UNPAIRED:
+            ESP_LOGI(TAG, "Waiting for pairing");
+            if (scan_hid_device(COD_MAJOR, COD_MINOR, 10, &bluetooth_address))
+            {
+                ESP_LOGI(TAG, "Found bluetooth device:  " ESP_BD_ADDR_STR " ", ESP_BD_ADDR_HEX(bluetooth_address));
+                prefs.setBDA(&bluetooth_address);
+                bluetooth_state = Bluetooth_states::PAIRED;
+            }
+            else
+            {
+                ESP_LOGE(TAG, "Failed to find bluetooth device");
+            }
+            break;
+        case Bluetooth_states::PAIRED:
+            controller.setBda(bluetooth_address);
+            controller.connect(); // Reconnection will be attempted automatically by the driver.  Don't put this inside the loop.
+            bluetooth_state = Bluetooth_states::CONNECTING;
+            break;
         case Bluetooth_states::CONNECTING:
             vTaskDelay(pdMS_TO_TICKS(100));
             if (controller.isConnected())

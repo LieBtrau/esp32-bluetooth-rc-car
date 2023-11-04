@@ -29,7 +29,7 @@ esp_err_t NonVolatileStorage::init()
     if (err != ESP_OK)
         return err;
 
-     // If NVS contents is valid, read BDA
+    // If NVS contents is valid, read BDA
     size_t required_size = STORAGE_BDA_SIZE;
     err = nvs_get_blob(my_handle, STORAGE_KEY_BDA, _bda, &required_size);
     if (err != ESP_OK)
@@ -40,9 +40,16 @@ esp_err_t NonVolatileStorage::init()
     return ESP_OK;
 }
 
+/**
+ * @brief Get Bluetooth device address from NVS
+ * 
+ * @param bda will be filled with the BDA if it is valid
+ * @return true 
+ * @return false bda is not valid (not stored in NVS or all zeroes)
+ */
 bool NonVolatileStorage::getBDA(esp_bd_addr_t *bda)
 {
-    if (nvsInitialized == 0)
+    if (nvsInitialized == 0 || (_bda[0] == 0 && memcmp(_bda, _bda + 1, STORAGE_BDA_SIZE - 1) == 0))
         return false;
     memcpy(bda, _bda, STORAGE_BDA_SIZE);
     return true;

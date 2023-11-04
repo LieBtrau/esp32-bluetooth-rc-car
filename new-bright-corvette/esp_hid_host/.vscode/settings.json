@@ -1,9 +1,10 @@
 {
-    "idf.adapterTargetName": "esp32",
-    "idf.flashType": "UART",
-    "idf.port": "/dev/ttyUSB1",
-    "idf.openOcdConfigs": [
-        "interface/ftdi/esp32_devkitj_v1.cfg",
-        "target/esp32.cfg"
-    ]
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.flashType": "UART",
+  "files.associations": {
+    "bitset": "cpp",
+    "ostream": "cpp",
+    "tuple": "cpp",
+    "*.inc": "cpp"
+  }
 }

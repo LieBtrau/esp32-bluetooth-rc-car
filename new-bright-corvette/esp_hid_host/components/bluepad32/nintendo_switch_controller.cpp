@@ -37,18 +37,20 @@ NintendoSwitchController::NintendoSwitchController() : transport(ESP_HID_TRANSPO
 void NintendoSwitchController::setBda(const esp_bd_addr_t address)
 {
     memcpy(_bda, address, sizeof(esp_bd_addr_t));
-    add_callback(_bda, nintendo_switch_controller_callback);
 
-    // Add the controller to the table
-    NintendoSwitchController **newTable = (NintendoSwitchController **)realloc(controllerTable, sizeof(NintendoSwitchController *) * (controllerTableSize + 1));
-    if (newTable == NULL)
+    if (add_callback(_bda, nintendo_switch_controller_callback))
     {
-        ESP_LOGE(TAG, "Failed to allocate memory for controller table");
-        return;
+        // Add the controller to the table
+        NintendoSwitchController **newTable = (NintendoSwitchController **)realloc(controllerTable, sizeof(NintendoSwitchController *) * (controllerTableSize + 1));
+        if (newTable == NULL)
+        {
+            ESP_LOGE(TAG, "Failed to allocate memory for controller table");
+            return;
+        }
+        controllerTable = newTable;
+        controllerTable[controllerTableSize] = this;
+        controllerTableSize++;
     }
-    controllerTable = newTable;
-    controllerTable[controllerTableSize] = this;
-    controllerTableSize++;
 }
 
 void NintendoSwitchController::connect()

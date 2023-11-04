@@ -29,12 +29,22 @@ bool ThrustMotor::init(uint32_t pin_A, uint32_t pin_B)
     return true;
 }
 
+void ThrustMotor::stop()
+{
+    setSpeed(0);
+}
+
 bool ThrustMotor::setSpeed(int speed)
 {
     if (xThrustQueue == NULL)
     {
         return false;
     }
+    if(speed == _currentSpeed)
+    {
+        return true;
+    }
+    _currentSpeed = speed;
     if (xQueueSend(xThrustQueue, &speed, (TickType_t)1) != pdPASS)
     {
         ESP_LOGE(TAG, "Failed to send to xThrustQueue");

@@ -10,12 +10,19 @@ static const char *TAG = "HID";
 static callback_entry_t *callback_table = NULL;
 static int callback_table_size = 0;
 
-void add_callback(esp_bd_addr_t address, void (*callback)(esp_hidh_event_t event, esp_hidh_event_data_t *param))
+bool add_callback(esp_bd_addr_t address, void (*callback)(esp_hidh_event_t event, esp_hidh_event_data_t *param))
 {
+    for(int i=0;i<callback_table_size;i++){
+        if(memcmp(callback_table[i].bda, address, sizeof(esp_bd_addr_t))==0){
+            ESP_LOGE(TAG, "Callback already registered for this address!");
+            return false;
+        }
+    }
     callback_table_size++;
     callback_table = realloc(callback_table, callback_table_size * sizeof(callback_entry_t));
     callback_table[callback_table_size - 1].callback = callback;
     memcpy(callback_table[callback_table_size - 1].bda, address, sizeof(esp_bd_addr_t));
+    return true;
 }
 
 void hidh_callback(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
