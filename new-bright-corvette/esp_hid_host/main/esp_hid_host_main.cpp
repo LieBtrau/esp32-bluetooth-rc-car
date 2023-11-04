@@ -29,6 +29,7 @@ extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "Version : %s", VERSION);
 
+    // Enable switch takeover first, so that the user doesn't have to press the power on switch for too long.
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << PIN_PWR_EN),
         .mode = GPIO_MODE_OUTPUT,
@@ -37,7 +38,10 @@ extern "C" void app_main(void)
         .intr_type = GPIO_INTR_DISABLE};
     gpio_config(&io_conf);
     gpio_set_level(PIN_PWR_EN, 1);
-
+    // Configure button (needed to detect the start of the key press at power on)
+    Button button;
+    button.init(PIN_SWITCH);
+    // Configure LED (so that user can see the device is alive)
     LED led;
     led.init(PIN_LED);
 
@@ -47,8 +51,6 @@ extern "C" void app_main(void)
     thrustMotor.init(PIN_THRUST_MOTOR_A, PIN_THRUST_MOTOR_B);
     BluetoothController btcontroller;
     btcontroller.init();
-    Button button;
-    button.init(PIN_SWITCH);
 
     TimerHandle_t xNoConnectTimer = xTimerCreate("Timer", pdMS_TO_TICKS(60000), pdFALSE, NULL, [](TimerHandle_t xTimer)
                                                  {
