@@ -6,5 +6,6 @@
     "ostream": "cpp",
     "tuple": "cpp",
     "*.inc": "cpp"
-  }
+  },
+  "idf.adapterTargetName": "esp32"
 }
