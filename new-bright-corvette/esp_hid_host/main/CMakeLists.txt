@@ -1,6 +1,6 @@
 set(srcs
         "BluetoothController.cpp"
-        "Button.c"
+        "Button.cpp"
         "esp_hid_host_main.cpp" 
         "NonVolatileStorage.cpp"
         "LED.cpp"
@@ -9,7 +9,7 @@ set(srcs
         )
 set(include_dirs "include")
 
-idf_component_register(SRCS "${srcs}"
+idf_component_register(SRCS "Button.cpp" "${srcs}"
                        INCLUDE_DIRS "${include_dirs}"
                        REQUIRES bluepad32 driver esp_hid esp_hid_gap 
                        PRIV_REQUIRES nvs_flash)

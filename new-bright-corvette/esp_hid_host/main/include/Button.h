@@ -3,14 +3,16 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+enum class ButtonEvent
+{
+    None,
+    SingleClick,
+    LongPress
+};
 
-
-
-void initButton(uint32_t pinButton, EventGroupHandle_t buttonEvents);
-
-#ifdef __cplusplus
-}
-#endif
+class Button
+{
+public:
+    void init(int32_t pinButton);
+    ButtonEvent waitEvent();
+};
