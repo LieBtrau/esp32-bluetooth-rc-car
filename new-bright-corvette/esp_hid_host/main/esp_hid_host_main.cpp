@@ -28,17 +28,19 @@ extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "Version : %s", VERSION);
 
+    bool isAlive = true;
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << PIN_PWR_EN),
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
-        };
+        .intr_type = GPIO_INTR_DISABLE};
     gpio_config(&io_conf);
     gpio_set_level(PIN_PWR_EN, 1);
+    
+    LED led;
+    led.init(PIN_LED);
 
-    bool isAlive = true;
     SteerMotor steerMotor;
     steerMotor.init(PIN_STEERING_MOTOR_A, PIN_STEERING_MOTOR_B);
     ThrustMotor thrustMotor;
@@ -47,9 +49,7 @@ extern "C" void app_main(void)
     btcontroller.init();
     Button button;
     button.init(PIN_SWITCH);
-    LED led;
-    led.init(PIN_LED);
-    while(isAlive)
+    while (isAlive)
     {
         switch (btcontroller.getState())
         {
@@ -75,22 +75,21 @@ extern "C" void app_main(void)
         default:
             break;
         }
-        switch(button.waitEvent())
+        switch (button.waitEvent())
         {
-            case ButtonEvent::SingleClick:
-                ESP_LOGI(TAG, "Button short pressed");
-                isAlive = false;
-                break;
-            case ButtonEvent::LongPress:
-                ESP_LOGI(TAG, "Button long pressed");
-                btcontroller.unpair();
-                break;
-            default:
-                break;
+        case ButtonEvent::SingleClick:
+            ESP_LOGI(TAG, "Button short pressed");
+            isAlive = false;
+            break;
+        case ButtonEvent::LongPress:
+            ESP_LOGI(TAG, "Button long pressed");
+            btcontroller.unpair();
+            break;
+        default:
+            break;
         }
     }
     ESP_LOGI(TAG, "Exiting...");
     thrustMotor.stop();
     gpio_set_level(PIN_PWR_EN, 0);
-
 }

@@ -14,7 +14,7 @@ void LED::init(int32_t pin)
         .blink_list_num = (uint16_t)DEFAULT_BLINK_LIST_NUM,
     };
     _led_handle = led_indicator_create(&config);
-    _blink_type = BLINK_PROVISIONED;
+    _blink_type = BLINK_UPDATING;
     led_indicator_start(_led_handle, _blink_type);
 }
 
