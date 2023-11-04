@@ -1,7 +1,7 @@
 set(srcs
         "BluetoothController.cpp"
         "Button.cpp"
-        "esp_hid_host_main.cpp" 
+        "Corvette-RC.cpp" 
         "NonVolatileStorage.cpp"
         "LED.cpp"
         "SteerMotor.cpp"

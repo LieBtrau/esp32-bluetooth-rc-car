@@ -3,6 +3,6 @@
 cmake_minimum_required(VERSION 3.16)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(esp_hid_host)
+project(CorvetteRcCar)
 
 # bdc motor control added by using idf.py : https://components.espressif.com/components/espressif/bdc_motor
