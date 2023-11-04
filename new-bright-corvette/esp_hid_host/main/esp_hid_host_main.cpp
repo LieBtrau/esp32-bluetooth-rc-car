@@ -23,12 +23,12 @@
 #include "Button.h"
 
 static const char *TAG = "ESP_HIDH_DEMO";
+static bool isAlive = true;
 
 extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "Version : %s", VERSION);
 
-    bool isAlive = true;
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << PIN_PWR_EN),
         .mode = GPIO_MODE_OUTPUT,
@@ -37,7 +37,7 @@ extern "C" void app_main(void)
         .intr_type = GPIO_INTR_DISABLE};
     gpio_config(&io_conf);
     gpio_set_level(PIN_PWR_EN, 1);
-    
+
     LED led;
     led.init(PIN_LED);
 
@@ -49,6 +49,13 @@ extern "C" void app_main(void)
     btcontroller.init();
     Button button;
     button.init(PIN_SWITCH);
+
+    TimerHandle_t xNoConnectTimer = xTimerCreate("Timer", pdMS_TO_TICKS(60000), pdFALSE, NULL, [](TimerHandle_t xTimer)
+                                                 {
+        ESP_LOGI(TAG, "Timer expired");
+        isAlive = false; });
+    xTimerStart(xNoConnectTimer, 0);
+
     while (isAlive)
     {
         switch (btcontroller.getState())
@@ -70,6 +77,12 @@ extern "C" void app_main(void)
                 thrustMotor.setSpeed(gamepad.axis_y);
                 Direction direction = gamepad.axis_rx < 0 ? Direction::LEFT : (gamepad.axis_rx > 0 ? Direction::RIGHT : Direction::STRAIGHT);
                 steerMotor.setDirection(direction);
+            }
+            if (xTimerReset(xNoConnectTimer, 10) != pdPASS)
+            {
+                /* The reset command was not executed successfully.  Take appropriate
+                action here. */
+                ESP_LOGE(TAG, "Timer reset failed");
             }
             break;
         default:

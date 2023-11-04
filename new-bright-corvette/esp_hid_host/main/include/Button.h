@@ -15,4 +15,6 @@ class Button
 public:
     void init(int32_t pinButton);
     ButtonEvent waitEvent();
+private:
+    int _startPressCount = 0;
 };
