@@ -49,7 +49,7 @@ void steering_motor_task(void *pvParameters)
 {
     const uint32_t BDC_MCPWM_TIMER_RESOLUTION_HZ = 10e6;                                        // 10MHz
     const uint32_t BDC_MCPWM_DUTY_TICK_MAX = BDC_MCPWM_TIMER_RESOLUTION_HZ / BDC_MCPWM_FREQ_HZ; // maximum value we can set for the duty cycle, in ticks
-    const uint32_t BDC_MCPWM_DUTY_TICK_MIN_HOLD = 30 * BDC_MCPWM_DUTY_TICK_MAX / 100;           // minimum PWM value needed for the motor to hold position
+    const uint32_t BDC_MCPWM_DUTY_TICK_MIN_HOLD = 80 * BDC_MCPWM_DUTY_TICK_MAX / 100;           // minimum PWM value needed for the motor to hold position
 
     ESP_LOGI(TAG, "Create DC motors");
     bdc_motor_mcpwm_config_t mcpwm_config = {
